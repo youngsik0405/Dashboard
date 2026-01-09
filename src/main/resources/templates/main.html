@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" th:href="@{/css/reset.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <script src="https://kit.fontawesome.com/16a62b2266.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <header>
+        <div class="header-logo">
+            <img th:src="@{/images/logo.png}" alt="로고">
+            <div class="header-logo-title">
+                <p>제주특별자치도 농업기술원</p>
+                <p>서귀포농업기술센터</p>
+            </div>
+        </div>
+        <div class="user-login">
+            <span><i class="fa-regular fa-user"></i>qsol님</span>
+            <button class="login_button" onclick="">로그아웃</button>
+        </div>
+    </header>
+    <div class="container">
+        <div class="content-left">
+            <div class="farm-info">
+                <div class="farm-info-title">
+                    <div class="farm-icon"><i class="fa-solid fa-leaf"></i></div>
+                    <span>강정숙 농장</span>
+                </div>
+                <div class="farm-info-row">
+                    <span>ESS 명칭</span>
+                    <span>강정숙_농장_ESS</span>
+                </div>
+                <div class="farm-info-row">
+                    <span>사용자명</span>
+                    <span>강정숙</span>
+                </div>
+                <div class="farm-info-row">
+                    <span>설치 위치</span>
+                    <span>남원읍 위미리</span>
+                </div>
+                <div class="farm-info-row">
+                    <span>설치 일자</span>
+                    <span>2025.12.31</span>
+                </div>
+
+                <div class="farm-info-icon">
+                    <div class="icon icon-orange"><i class="fa-solid fa-tower-observation"></i></div>
+                    <div class="arrow">>>></div>
+                    <div class="icon icon-green"><i class="fa-solid fa-battery-three-quarters"></i></div>
+                    <div class="arrow">>>></div>
+                    <div class="icon icon-blue"><i class="fa-solid fa-fan"></i></div>
+                </div>
+            </div>
+
+
+            <div class="alert-info">
+                <div class="alert-tab">
+                    <input type="radio" id="event" name="tabItem" checked>
+                    <label class="tab-item" for="event">이벤트 발생 내역</label>
+                    
+                    <div class="content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>번호</th>
+                                    <th>발생시간</th>
+                                    <th>발생내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>2025-12-31 01:35:25</td>
+                                    <td>통신상태가 정상입니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>2025-12-30 01:31:25</td>
+                                    <td>통신오류가 발생했습니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>2025-12-31 01:35:25</td>
+                                    <td>통신상태가 정상입니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>4</td>
+                                    <td>2025-12-31 01:35:25</td>
+                                    <td>통신상태가 정상입니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>5</td>
+                                    <td>2025-12-31 01:35:25</td>
+                                    <td>대기중 모드로 변경되었습니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>6</td>
+                                    <td>2025-12-31 01:35:25</td>
+                                    <td>통신상태가 정상입니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>7</td>
+                                    <td>2025-12-31 01:35:25</td>
+                                    <td>통신상태가 정상입니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>8</td>
+                                    <td>2025-12-31 01:35:25</td>
+                                    <td>통신상태가 정상입니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>9</td>
+                                    <td>2025-12-31 01:35:25</td>
+                                    <td>통신상태가 정상입니다.</td>
+                                </tr>
+                            </tbody>
+                        </table>        
+                    </div>
+                </div>
+
+                <div class="alert-tab">
+                    <input type="radio" id="discharge" name="tabItem">
+                    <label class="tab-item" for="discharge">방전 내역</label>
+                    <div class="content">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>번호</th>
+                                    <th>방전시간</th>
+                                    <th>방전내용</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>2026-01-01 11:11:11</td>
+                                    <td>방전 되었습니다.</td>
+                                </tr>
+                                <tr>
+                                    <td>2</td>
+                                    <td>2025-12-30 01:31:25</td>
+                                    <td>방전 되었습니다</td>
+                                </tr>
+                                <tr>
+                                    <td>3</td>
+                                    <td>2025-12-31 01:35:25</td>
+                                    <td>방전 되었습니다.</td>
+                                </tr>
+                            </tbody>
+                        </table> 
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="content-right">
+            <div class="status-container">
+                <div class="status">
+                    <span>상태</span>
+                    <span>대기 중</span>
+                </div>  
+                <div class="metric">
+                    <span>충전량</span>
+                    <span>88.1%</span>
+                </div>
+                <div class="metric">
+                    <span>전압</span>
+                    <span>55.8V</span>
+                </div>
+                <div class="metric">
+                    <span>온도</span>
+                    <span>32.72˚C</span>
+                </div>
+                <div class="metric">
+                    <span>전류</span>
+                    <span>0.0A</span>
+                </div>
+                <div class="metric metric-icon">
+                    <span>알람 유무</span>
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="metric metric-icon">
+                    <span>화재감지</span>
+                    <i class="fa-solid fa-fire"></i>
+                </div>
+            </div>
+
+            <div class="module-data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>모듈번호</th>
+                            <th>상태</th>
+                            <th>전압[V]</th>
+                            <th>최대 셀 전압[V]</th>
+                            <th>최소 셀 전압[V]</th>
+                            <th>온도[˚C]</th>
+                            <th>알람 유무</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>대기 중</td>
+                            <td>28.13</td>
+                            <td>4.0250</td>
+                            <td>4.0042</td>
+                            <td>14.0</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>대기 중</td>
+                            <td>28.13</td>
+                            <td>4.0250</td>
+                            <td>4.0042</td>
+                            <td>14.0</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>대기 중</td>
+                            <td>28.13</td>
+                            <td>4.0250</td>
+                            <td>4.0042</td>
+                            <td>14.0</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>대기 중</td>
+                            <td>28.13</td>
+                            <td>4.0250</td>
+                            <td>4.0042</td>
+                            <td>14.0</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>대기 중</td>
+                            <td>28.13</td>
+                            <td>4.0250</td>
+                            <td>4.0042</td>
+                            <td>14.0</td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>대기 중</td>
+                            <td>28.13</td>
+                            <td>4.0250</td>
+                            <td>4.0042</td>
+                            <td>14.0</td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <span>일일 데이터 조회</span>
+                    <span>Rack 그래프</span>
+                    <span>2026-01-06</span>
+                </div>
+                <div class="chart">
+                    <div class="voltage">
+                        <p>60.0 V</p>
+                        <p>50.0 V</p>
+                        <p>40.0 V</p>
+                        <p>30.0 V</p>
+                    </div>
+                    <div class="graph">
+                        그래프
+                    </div>
+                    <div class="current">
+                        <p>45.0 A</p>
+                        <p>30.0 A</p>
+                        <p>15.0 A</p>
+                        <p>0.0 A</p>
+                    </div>
+                    <div class="temperature">
+                        <p>45.0 ˚C</p>
+                        <p>30.0 ˚C</p>
+                        <p>15.0 ˚C</p>
+                        <p>0.0 ˚C</p>
+                    </div>
+                    <div class="time">
+                        <span>08:51</span>
+                        <span>09:16</span>
+                        <span>09:41</span>
+                        <span>10:07</span>
+                        <span>10:32</span>
+                        <span>10:56</span>
+                        <span>11:22</span>
+                        <span>11:46</span>
+                        <span>12:11</span>
+                        <span>12:36</span>
+                        <span>13:00</span>
+                        <span>13:25</span>
+                        <span>13:50</span>
+                        <span>14:14</span>
+                    </div>
+                </div>
+                <div class="chart-legend">
+                    <span><i class="fa-solid fa-code-commit"></i>전압(V)</span>
+                    <span><i class="fa-solid fa-code-commit"></i>전류(A)</span>
+                    <span><i class="fa-solid fa-code-commit"></i>온도(˚C)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <span>ⓒ 2023 Quantum Solution. ALL RIGHTS RESERVED.</span>
+        <img th:src="@{/images/footer_logo.png}" alt="로고">
+    </footer>
+</body>
+</html>

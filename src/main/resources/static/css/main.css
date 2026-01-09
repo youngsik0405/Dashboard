@@ -1,0 +1,482 @@
+/* 공통 테이블 */
+table {
+    width: 100%;
+}
+
+th {
+    color: #8E8E8E;
+    background-color: #F0F0F0;
+    text-align: center;
+    border-bottom: 1px solid #8E8E8E;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 15px;
+}
+
+td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #8E8E8E;
+}
+
+/* =================================================================================================================================== */
+
+/* 메인 */
+.container {
+    padding: 10px 30px 0 30px;
+    font-size: 0;
+}
+
+/* 왼쪽 영역 */
+.content-left {
+    display: inline-block;
+    width: 560px;
+    padding-right: 50px;
+}
+
+/* 농장 정보 영역*/
+.farm-info {
+    padding: 30px;
+    border-radius: 12px;
+    background: linear-gradient(#D6F5D6, #fdfbfb);
+    margin-bottom: 20px;
+}
+
+.farm-info-title {
+    margin-bottom: 10px;
+}
+
+.farm-icon {
+    width: 55px;
+    height: 55px;
+    background-color: white;
+    border-radius: 40px;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    align-content: center;
+    font-size: 30px;
+    line-height: 50px;
+    
+}
+
+.farm-info-title span{
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0 20px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.farm-info-row {
+    padding: 8px 0;
+}
+
+.farm-info-row span:first-child {
+    display: inline-block;
+    width: 100px;
+    font-size: 16px;
+    padding-left: 80px;
+    border-right: 1px solid #8E8E8E;
+    vertical-align: top;
+}
+
+.farm-info-row span:last-child {
+    display: inline-block;
+    padding-left: 10px;
+    font-size: 16px;
+    vertical-align: top;
+}
+
+/* 아이콘 */
+.farm-info-icon {
+    border-radius: 12px;
+    background-color: white;
+    padding: 20px 40px;
+    margin-top: 20px;
+    text-align: justify;
+    box-shadow: 5px 5px 10px #ccc;
+}
+
+.farm-info-icon::after {
+    content: "";
+    display: inline-block;
+    width: 100%;
+}
+
+.farm-info-icon .icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 12px;
+    font-size: 32px;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+    align-content: center;
+}
+
+.icon-orange {
+    background-color: #FF6A33;
+}
+
+.icon-green {
+    background-color: #5BD75B;
+}
+
+.icon-blue {
+    background-color: #52CDF9;
+}
+
+.arrow {
+    display: inline-block;
+    vertical-align: middle;
+    font-size: 20px;
+    color: #8E8E8E;
+    background-color: #F0F0F0;
+    border-radius: 16px;
+    padding: 0 20px;
+    margin: 0 15px;
+}
+
+/* =================================================================================================================================== */
+
+/* 알림 영역 */
+.alert-info {
+    font-size: 0;
+}
+
+/* 탭 */
+.alert-tab {
+    display: inline-block;
+    width: 280px;
+    font-size: 14px;
+}
+
+.alert-tab label {
+    display: block;
+    background-color: #C6C6C6;
+    padding: 10px;
+    border: 1px solid #8E8E8E;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    text-align: center;
+}
+
+.alert-tab [type=radio] {
+    display: none;
+}
+
+.alert-tab .content {
+    display: none;
+    width: 560px;
+    border-radius: 0 0 12px 12px;
+    border: 1px solid #8E8E8E;
+    border-top: none;
+    box-sizing: border-box;
+}
+
+.alert-info .alert-tab:nth-child(2) .content {
+    margin-left: -280px;
+}
+
+[type=radio]:checked ~ label {
+    background-color: #D6F5D6;
+    color: #8E8E8E;
+    font-weight: bold;
+}
+
+[type=radio]:checked ~ label ~ .content {
+    display: block;
+}
+
+/* 테이블 */
+.content th:nth-child(1) {
+    width: 50px;
+}
+
+.content th:nth-child(2) {
+    width: 200px;
+}
+
+.content th:nth-child(3) {
+    width: 220px;
+}
+
+.content tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 12px;
+}
+
+.content tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 12px;
+}
+
+.content tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* =================================================================================================================================== */
+
+/* 오른쪽 영역 */
+.content-right {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% - 560px - 50px);
+}
+
+/* 농장 상태 영역 */
+.status-container {
+    margin-bottom: 20px;
+    font-size: 0;
+    text-align: justify;
+}
+
+.status-container::after{
+  content:"";
+  display: inline-block;
+  width: 100%;
+}
+
+/* 상태 */
+.status {
+    display: inline-block;
+    vertical-align: top;
+    padding: 20px;
+    border-radius: 12px;
+    background-color: #EBF5FF;
+    font-size: 14px;
+}
+
+.status span:first-child {
+    display: block;
+    color: #56ACFF;
+    padding-bottom: 15px;
+}
+
+.status span:last-child {
+    display: block;
+    width: 250px;
+    font-size: 32px;
+    font-weight: bold;
+    color: #56ACFF;
+}
+
+/* 측정값 */
+.metric {
+    display: inline-block;
+    vertical-align: top;
+    background-color: #5BD75B;
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 14px;
+}
+
+.metric span:first-child {
+    display: block;
+    color: white;
+    padding-bottom: 15px;
+}
+
+.metric span:last-child {
+    display: block;
+    width: 130px;
+    font-size: 32px;
+    font-weight: bold;
+    color: yellow;
+}
+
+/* 알람/화재감지 */
+.metric-icon {
+    width: 80px;
+    text-align: center;
+}
+
+.metric-icon span {
+    text-align: left;
+}
+
+.metric i {
+    font-size: 18px;
+    color: #C6C6C6;
+    width: 32px;
+    height: 32px;
+    background-color: white;
+    border-radius: 8px;
+    align-content: center;
+}
+
+/* =================================================================================================================================== */
+
+/* 모듈 데이터 테이블 영역 */
+.module-data-table {
+    margin-bottom: 20px;
+    border-radius: 12px;
+    border: 1px solid #8E8E8E;
+    overflow: hidden;
+}
+
+.module-data-table table {
+    border-style: hidden;
+}
+
+.module-data-table th {
+    font-size: 14px;
+}
+
+.module-data-table td {
+    font-size: 14px;
+    padding: 15px;
+}
+
+/* =================================================================================================================================== */
+
+/* 그래프 영역 */
+.chart-container {
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid #8E8E8E;
+}
+
+/* 상단 */
+.chart-header {
+    margin-bottom: 20px;
+    text-align: justify;
+    /* position: relative; */
+}
+
+.chart-header::after {
+    content: "";
+    display: inline-block;
+    width: 100%;
+}
+
+.chart-header span:first-child {
+    display: inline-block;
+    background-color: #D6F5D6;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    /* position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%); */
+}
+
+.chart-header span:nth-child(2) {
+    display: inline-block;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 40px;
+}
+
+.chart-header span:last-child {
+    display: inline-block;
+    font-size: 14px;
+    /* position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%); */
+}
+
+/* 메인 그래프 표시 영역 */
+.chart {
+    margin-bottom: 20px;
+    font-size: 0;
+    text-align: justify;
+}
+
+.chart::after {
+    content: "";
+    display: inline-block;
+    width: 100%;
+}
+
+/* 그래프 */
+.graph {
+    display: inline-block;
+    vertical-align: bottom;
+    width: 1030px;
+    height: 200px;
+    border-left: 1px solid #8E8E8E;
+    border-bottom: 1px solid #8E8E8E;
+}
+
+/* Y축 (전압, 전류, 온도) */
+.voltage, .current, .temperature {
+    display: inline-block;
+    vertical-align: bottom;
+    height: 200px;
+}
+
+.voltage {
+    color: #56ACFF;
+    text-align: right;
+    padding-right: 10px;
+}
+
+.current {
+    padding-left: 10px;
+}
+
+.temperature {
+    color: #5BD75B;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.chart p {
+    font-size: 12px;
+    padding: 25px 0;
+}
+
+.chart p:first-child {
+    padding: 0 0 25px 0;
+}
+
+.chart p:last-child {
+    padding: 25px 0 0 0;
+}
+
+/* X축 시간 */
+.time {
+    display: inline-block;
+    margin-top: 5px;
+    padding-left: 100px;
+}
+
+.time span {
+    font-size: 12px;
+    padding: 0 20px;
+}
+
+.time span:first-child {
+    padding: 0 20px 0 0;
+}
+
+.time span:last-child {
+    padding: 0 0 0 20px;
+}
+
+/* 범례 */
+.chart-legend {
+    text-align: center;
+}
+
+.chart-legend span {
+    margin: 0 10px;
+    font-size: 16px;
+}
+
+.chart-legend i {
+    padding: 0 5px;
+}
+
+.chart-legend span:first-child i {
+    color: #56ACFF;
+}
+
+.chart-legend span:last-child i {
+    color: #5BD75B;
+}
+
+/* =================================================================================================================================== */
+

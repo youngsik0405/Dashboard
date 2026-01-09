@@ -1,0 +1,91 @@
+/* 헤더 */
+header {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ccc;
+    padding: 0 40px;
+    text-align: justify;
+    font-size: 0;
+}
+
+header::after {
+    content: "";
+    display: inline-block;
+    width: 100%;
+}
+
+/* 헤더 왼쪽 영역 */
+.header-logo {
+    display: inline-block;
+    vertical-align: middle;
+    padding-right: 20px;
+    position: relative;
+}
+
+.header-logo-title {
+    display: inline-block;
+    vertical-align: middle;
+    padding: 16px 5px;
+}
+
+.header-logo img {
+    width: 60px;
+    vertical-align: middle;
+}
+
+.header-logo p:first-child {
+    font-size: 10px;
+    color: #8E8E8E;
+    font-weight: bold;
+    padding-bottom: 2px;
+}
+
+.header-logo p:last-child {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* 헤더 오른쪽 영역 */
+.user-login {
+    display: inline-block;
+    vertical-align: middle;
+    /* float: right; */
+}
+
+.user-login i {
+    padding: 5px;
+    font-size: 16px;
+}
+
+.user-login span {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 60px;
+    padding: 0 20px 0 0;
+    font-size: 14px;
+    position: relative;
+}
+
+.login_button {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+
+/* after */
+.header-logo::after, .user-login span::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    margin-left: 10px;
+    background-color: #D8D8D8;
+}
+
+.header-logo::after {
+    height: 25px;
+}
+
+.user-login span::after {
+    height: 15px;
+}
