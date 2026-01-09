@@ -19,8 +19,9 @@ public class MemberEss {
     @Column(name = "id_number")
     private Long idNumber;
 
+    @OneToOne
     @Column(name = "user_id")
-    private String userId;
+    private Member member;
 
     @OneToOne
     @JoinColumn(name = "ess_id")

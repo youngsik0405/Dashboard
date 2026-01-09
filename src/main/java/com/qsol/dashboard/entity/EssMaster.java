@@ -1,10 +1,9 @@
 package com.qsol.dashboard.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+
+import java.util.Date;
 
 @Entity
 @Table(name="tb_ess_master")
@@ -26,6 +25,6 @@ public class EssMaster {
     private String installLocation;
 
     @Column(name = "install_date")
-    private String installDate;
+    private Date installDate;
 
 }
