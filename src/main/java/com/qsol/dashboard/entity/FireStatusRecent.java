@@ -4,20 +4,23 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
-@Table(name = "tb_member")
+@Table(name = "tb_ess_fire_status_recent")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Member {
+
+public class FireStatusRecent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private String userId;
-    
-    @Column(name = "user_name")
-    private String userName;
+    @Column(name = "id")
+    private Integer id;
+
+    @Column(name = "ess_id")
+    private Integer essId;
+
+    @Column(name = "fire_status")
+    private Integer fireStatus;
 }

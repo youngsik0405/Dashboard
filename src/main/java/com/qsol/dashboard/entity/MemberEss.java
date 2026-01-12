@@ -4,14 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(name="tb_member_ess")
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 public class MemberEss {
 
     @Id
@@ -20,11 +18,12 @@ public class MemberEss {
     private Long idNumber;
 
     @OneToOne
-    @Column(name = "user_id")
+    @JoinColumn(name = "user_id")
     private Member member;
 
     @OneToOne
     @JoinColumn(name = "ess_id")
     private EssMaster essMaster;
+
 
 }

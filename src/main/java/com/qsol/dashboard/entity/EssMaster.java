@@ -10,13 +10,12 @@ import java.util.Date;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 public class EssMaster {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Integer id; // ess_id
+    private Integer id;
 
     @Column(name = "ess_name")
     private String essName;

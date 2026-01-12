@@ -29,30 +29,30 @@
             <div class="farm-info">
                 <div class="farm-info-title">
                     <div class="farm-icon"><i class="fa-solid fa-leaf"></i></div>
-                    <span>강정숙 농장</span>
+                    <span th:text = "${!#strings.isEmpty(essInfo.userName) ? essInfo.userName + ' 농장' : '정보 없음'}"></span>
                 </div>
                 <div class="farm-info-row">
                     <span>ESS 명칭</span>
-                    <span>강정숙_농장_ESS</span>
+                    <span th:text = "${!#strings.isEmpty(essInfo.essName) ? essInfo.essName : '정보 없음'}"></span>
                 </div>
                 <div class="farm-info-row">
                     <span>사용자명</span>
-                    <span>강정숙</span>
+                    <span th:text = "${!#strings.isEmpty(essInfo.userName) ? essInfo.userName : '정보 없음'}"></span>
                 </div>
                 <div class="farm-info-row">
                     <span>설치 위치</span>
-                    <span>남원읍 위미리</span>
+                    <span th:text = "${!#strings.isEmpty(essInfo.installLocation) ? essInfo.installLocation : '정보 없음'}"></span>
                 </div>
                 <div class="farm-info-row">
                     <span>설치 일자</span>
-                    <span>2025.12.31</span>
+                    <span th:text = "${!#strings.isEmpty(essInfo.installDate) ? #dates.format(essInfo.installDate, 'yyyy.MM.dd') : '정보 없음'}"></span>
                 </div>
 
                 <div class="farm-info-icon">
                     <div class="icon icon-orange"><i class="fa-solid fa-tower-observation"></i></div>
-                    <div class="arrow">>>></div>
+                    <p class="arrow">>>></p>
                     <div class="icon icon-green"><i class="fa-solid fa-battery-three-quarters"></i></div>
-                    <div class="arrow">>>></div>
+                    <p class="arrow">>>></p>
                     <div class="icon icon-blue"><i class="fa-solid fa-fan"></i></div>
                 </div>
             </div>
@@ -163,31 +163,31 @@
             <div class="status-container">
                 <div class="status">
                     <span>상태</span>
-                    <span>대기 중</span>
+                    <span th:text = "${rackStatusInfo.getMbmsStatusText()}"></span>
                 </div>  
                 <div class="metric">
                     <span>충전량</span>
-                    <span>88.1%</span>
+                    <span th:text = "${rackStatusInfo != null ? rackStatusInfo.rackSoc + '%' : '0.0%'}"></span>
                 </div>
                 <div class="metric">
                     <span>전압</span>
-                    <span>55.8V</span>
+                    <span th:text = "${rackStatusInfo != null ? rackStatusInfo.rackDcVoltage + 'V' : '0.0V'}"></span>
                 </div>
                 <div class="metric">
                     <span>온도</span>
-                    <span>32.72˚C</span>
+                    <span th:text = "${rackStatusInfo != null ? rackStatusInfo.rackTemperature + '˚C' : '0.0˚C'}"></span>
                 </div>
                 <div class="metric">
                     <span>전류</span>
-                    <span>0.0A</span>
+                    <span th:text = "${rackStatusInfo != null ? rackStatusInfo.rackCurrent + 'A' : '0.0A'}"></span>
                 </div>
                 <div class="metric metric-icon">
                     <span>알람 유무</span>
-                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <i class="fa-solid fa-triangle-exclamation" th:classappend="${rackStatusInfo.hasAlarm == true ? 'alarm-active' : ''}"></i>
                 </div>
                 <div class="metric metric-icon">
                     <span>화재감지</span>
-                    <i class="fa-solid fa-fire"></i>
+                    <i class="fa-solid fa-fire" th:classappend="${rackStatusInfo.fireStatus == 1 ? 'fire-active' : ''}"></i>
                 </div>
             </div>
 
