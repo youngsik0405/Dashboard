@@ -142,78 +142,110 @@ td {
 
 /* 알림 영역 */
 .alert-info {
-    font-size: 0;
-}
-
-/* 탭 */
-.alert-tab {
-    display: inline-block;
-    width: 280px;
+    width: 560px;
     font-size: 14px;
 }
 
-.alert-tab label {
-    display: block;
-    background-color: #C6C6C6;
+/* 탭 */
+.tab-buttons {
+    font-size: 0;
+}
+
+.tab-button {
+    display: inline-block;
+    width: 50%;
     padding: 10px;
+    background: #C6C6C6;
     border: 1px solid #8E8E8E;
     border-bottom: none;
     border-radius: 12px 12px 0 0;
+    font-size: 14px;
     text-align: center;
 }
 
-.alert-tab [type=radio] {
-    display: none;
+.tab-button:first-child {
+    border-right: none;
 }
 
-.alert-tab .content {
-    display: none;
-    width: 560px;
-    border-radius: 0 0 12px 12px;
-    border: 1px solid #8E8E8E;
-    border-top: none;
-    box-sizing: border-box;
-}
-
-.alert-info .alert-tab:nth-child(2) .content {
-    margin-left: -280px;
-}
-
-[type=radio]:checked ~ label {
+.tab-button.active {
     background-color: #D6F5D6;
     color: #8E8E8E;
-    font-weight: bold;
+    font-weight: 600;
 }
 
-[type=radio]:checked ~ label ~ .content {
+.tab-content {
+    width: 100%;
+    border: 1px solid #8E8E8E;
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    box-sizing: border-box;
+    display: none;
+}
+
+.tab-content.active {
     display: block;
 }
 
-/* 테이블 */
-.content th:nth-child(1) {
+
+.tab-content th {
+    color: #8E8E8E;
+    background-color: #F0F0F0;
+    text-align: center;
+    border-bottom: 1px solid #8E8E8E;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px;
+}
+
+.tab-content td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #8E8E8E;
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#eventContent th:nth-child(1), #eventContent td:nth-child(1) {
     width: 50px;
 }
 
-.content th:nth-child(2) {
+#eventContent th:nth-child(2), #eventContent td:nth-child(2) {
     width: 200px;
 }
 
-.content th:nth-child(3) {
-    width: 220px;
+#eventContent th:nth-child(3), #eventContent td:nth-child(3) {
+    width: 310px;
 }
 
-.content tbody tr:last-child td:first-child {
+#dischargeContent th:nth-child(1), #dischargeContent td:nth-child(1) {
+    width: 50px;
+}
+
+#dischargeContent th:nth-child(2), #dischargeContent td:nth-child(2) {
+    width: 150px;
+}
+
+#dischargeContent th:nth-child(3), #dischargeContent td:nth-child(3) {
+    width: 150px;
+}
+
+#dischargeContent th:nth-child(4), #dischargeContent td:nth-child(4) {
+    width: 210px;
+}
+
+.tab-content tbody tr:last-child td:first-child {
     border-bottom-left-radius: 12px;
 }
 
-.content tbody tr:last-child td:last-child {
+.tab-content tbody tr:last-child td:last-child {
     border-bottom-right-radius: 12px;
 }
 
-.content tbody tr:last-child td {
+.tab-content tbody tr:last-child td {
     border-bottom: none;
 }
-
 /* =================================================================================================================================== */
 
 /* 오른쪽 영역 */

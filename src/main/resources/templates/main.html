@@ -59,101 +59,66 @@
 
 
             <div class="alert-info">
-                <div class="alert-tab">
-                    <input type="radio" id="event" name="tabItem" checked>
-                    <label class="tab-item" for="event">이벤트 발생 내역</label>
-                    
-                    <div class="content">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>번호</th>
-                                    <th>발생시간</th>
-                                    <th>발생내용</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>통신상태가 정상입니다.</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>2025-12-30 01:31:25</td>
-                                    <td>통신오류가 발생했습니다.</td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>통신상태가 정상입니다.</td>
-                                </tr>
-                                <tr>
-                                    <td>4</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>통신상태가 정상입니다.</td>
-                                </tr>
-                                <tr>
-                                    <td>5</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>대기중 모드로 변경되었습니다.</td>
-                                </tr>
-                                <tr>
-                                    <td>6</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>통신상태가 정상입니다.</td>
-                                </tr>
-                                <tr>
-                                    <td>7</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>통신상태가 정상입니다.</td>
-                                </tr>
-                                <tr>
-                                    <td>8</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>통신상태가 정상입니다.</td>
-                                </tr>
-                                <tr>
-                                    <td>9</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>통신상태가 정상입니다.</td>
-                                </tr>
-                            </tbody>
-                        </table>        
-                    </div>
+                <div class="tab-buttons">
+                    <button class = "tab-button active" onclick="switchAlertTab('event', this)">이벤트 발생 내역</button>
+                    <button class = "tab-button" onclick="switchAlertTab('discharge', this)">방전 내역</button>
+                </div>
+                <div class="tab-content active" id="eventContent">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>발생시간</th>
+                                <th>발생내용</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each = "eventHistory, status : ${eventHistory}">
+                                <td th:text = "${status.count}"></td>
+                                <td th:text = "${#temporals.format(eventHistory.eventDt, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                <td th:text = "${eventHistory.eventDesc}"></td>
+                            </tr>
+
+                            <tr th:each = "i : ${#numbers.sequence(1, 9 - #lists.size(eventHistory))}"
+                                th:if="${#lists.size(eventHistory) < 9}">
+                                <td colspan="3">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class="alert-tab">
-                    <input type="radio" id="discharge" name="tabItem">
-                    <label class="tab-item" for="discharge">방전 내역</label>
-                    <div class="content">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>번호</th>
-                                    <th>방전시간</th>
-                                    <th>방전내용</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>2026-01-01 11:11:11</td>
-                                    <td>방전 되었습니다.</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>2025-12-30 01:31:25</td>
-                                    <td>방전 되었습니다</td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>방전 되었습니다.</td>
-                                </tr>
-                            </tbody>
-                        </table> 
-                    </div>
+
+                <div class="tab-content" id="dischargeContent">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>시작시간</th>
+                                <th>종료시간</th>
+                                <th>방전시간</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>2026-01-01 11:11:11</td>
+                                <td>2026-01-01 11:11:11</td>
+                                <td>2026-01-01 11:11:11</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>2025-12-30 01:31:25</td>
+                                <td>2026-01-01 11:11:11</td>
+                                <td>2026-01-01 11:11:11</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>2025-12-31 01:35:25</td>
+                                <td>2026-01-01 11:11:11</td>
+                                <td>2026-01-01 11:11:11</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -319,5 +284,6 @@
         <span>ⓒ 2023 Quantum Solution. ALL RIGHTS RESERVED.</span>
         <img th:src="@{/images/footer_logo.png}" alt="로고">
     </footer>
+<script th:src="@{/javascript/main.js}"></script>
 </body>
 </html>
