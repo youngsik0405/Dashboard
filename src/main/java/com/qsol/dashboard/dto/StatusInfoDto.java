@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class StatusInfoDto {
 
-    private Integer mbmsStatus;
+    private String mbmsStatus;
     private BigDecimal rackSoc;
     private BigDecimal rackDcVoltage;
     private BigDecimal rackTemperature;
@@ -23,23 +23,14 @@ public class StatusInfoDto {
 
     public static StatusInfoDto from(RackStatusRecent rackStatusRecent, FireStatusRecent fireStatusRecent) {
         return new StatusInfoDto(
-                rackStatusRecent.getMbmsStatus(),
-                rackStatusRecent.getRackSoc(),
-                rackStatusRecent.getRackDcVoltage(),
-                rackStatusRecent.getRackTemperature(),
-                rackStatusRecent.getRackCurrent(),
-                rackStatusRecent.hasAlarm(),
-                fireStatusRecent.getFireStatus()
+                rackStatusRecent != null ? rackStatusRecent.getMbmsStatusText() : "-",
+                rackStatusRecent != null ? rackStatusRecent.getRackSoc() : null,
+                rackStatusRecent != null ? rackStatusRecent.getRackDcVoltage() : null,
+                rackStatusRecent != null ? rackStatusRecent.getRackTemperature() : null,
+                rackStatusRecent != null ? rackStatusRecent.getRackCurrent() : null,
+                rackStatusRecent != null && rackStatusRecent.hasAlarm(),
+                fireStatusRecent != null ? fireStatusRecent.getFireStatus() : 0
         );
     }
 
-    public String getMbmsStatusText() {
-        return switch (mbmsStatus) {
-            case 0 -> "대기 중";
-            case 1 -> "충전 중";
-            case 2 -> "방전 중";
-            case 3 -> "시스템 종료";
-            default -> "알수 없음";
-        };
-    }
 }

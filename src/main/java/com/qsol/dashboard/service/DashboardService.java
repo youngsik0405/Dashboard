@@ -2,22 +2,17 @@ package com.qsol.dashboard.service;
 
 import com.qsol.dashboard.dto.EssInfoDto;
 import com.qsol.dashboard.dto.EventHistoryDto;
+import com.qsol.dashboard.dto.EssModuleStatusDto;
 import com.qsol.dashboard.dto.StatusInfoDto;
-import com.qsol.dashboard.entity.EventHistory;
-import com.qsol.dashboard.entity.FireStatusRecent;
-import com.qsol.dashboard.entity.MemberEss;
-import com.qsol.dashboard.entity.RackStatusRecent;
-import com.qsol.dashboard.repository.EventHistoryRepository;
-import com.qsol.dashboard.repository.FireStatusRecentRepository;
-import com.qsol.dashboard.repository.MemberEssRepository;
-import com.qsol.dashboard.repository.RackStatusRecentRepository;
+import com.qsol.dashboard.entity.*;
+import com.qsol.dashboard.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -29,31 +24,42 @@ public class DashboardService {
     private final RackStatusRecentRepository rackStatusRecentRepository;
     private final FireStatusRecentRepository fireStatusRecentRepository;
     private final EventHistoryRepository eventHistoryRepository;
+    private final EssModuleStatusRecentRepository essModuleStatusRecentRepository;
 
     // Ess 정보
     @Transactional(readOnly = true)
     public EssInfoDto getEssInfo(Integer essId) {
 
-        MemberEss memberEss = memberEssRepository.findByEssMaster_Id(essId);
+        try {
+            MemberEss memberEss = memberEssRepository.findByEssMaster_Id(essId);
 
-        if (memberEss == null) {
-            throw new IllegalArgumentException("ESS 정보가 존재하지 않습니다.");
+            if (memberEss == null) {
+                return null;
+            }
+
+            return EssInfoDto.from(memberEss);
+        } catch (Exception e) {
+            log.error("ESS 정보 조회 중 시스템 오류", e);
+            return null;
         }
-
-        return EssInfoDto.from(memberEss);
     }
 
     @Transactional(readOnly = true)
     public StatusInfoDto getRackStatusInfo(Integer essId) {
+        try {
+            RackStatusRecent rackStatusRecent = rackStatusRecentRepository.findByEssMaster_Id(essId);
+            FireStatusRecent fireStatusRecent = fireStatusRecentRepository.findByEssId(essId);
 
-        RackStatusRecent rackStatusRecent = rackStatusRecentRepository.findByEssMaster_Id(essId);
-        FireStatusRecent fireStatusRecent = fireStatusRecentRepository.findByEssId(essId);
+            if  (rackStatusRecent == null && fireStatusRecent == null) {
+                return null;
+            }
 
-        if  (rackStatusRecent == null) {
-            throw new IllegalArgumentException("Rack 상태 정보가 존재하지 않습니다.");
+            return StatusInfoDto.from(rackStatusRecent, fireStatusRecent);
+
+        } catch (Exception e) {
+            log.error("Rack 정보 조회 중 시스템 오류", e);
+            return null;
         }
-
-        return StatusInfoDto.from(rackStatusRecent, fireStatusRecent);
     }
 
     @Transactional(readOnly = true)
@@ -62,6 +68,11 @@ public class DashboardService {
         return eventHistoryList.stream().map(EventHistoryDto::from).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<EssModuleStatusDto> getModuleInfo(Integer essId) {
+        List<EssModuleStatusRecent> essModuleStatusRecentList = essModuleStatusRecentRepository.findByEssIdWithRack(essId);
+        return essModuleStatusRecentList.stream().map(EssModuleStatusDto::from).toList();
+    }
 
 
 }

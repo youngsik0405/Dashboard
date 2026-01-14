@@ -29,13 +29,14 @@ public class DashboardController {
 
         model.addAttribute("essInfo", dashboardService.getEssInfo(essId));
         model.addAttribute("rackStatusInfo", dashboardService.getRackStatusInfo(essId));
-//        model.addAttribute("eventHistory", dashboardService.getEventHistory(essId));
+        model.addAttribute("moduleInfo", dashboardService.getModuleInfo(essId));
+        model.addAttribute("eventHistory", dashboardService.getEventHistory(essId));
 
-        List<EventHistoryDto> list = dashboardService.getEventHistory(essId);
-        List<EventHistoryDto> testList = list.stream()
-                .limit(3)
-                .toList();
-        model.addAttribute("eventHistory", testList);
+//        List<EventHistoryDto> list = dashboardService.getEventHistory(essId);
+//        List<EventHistoryDto> testList = list.stream()
+//                .limit(3)
+//                .toList();
+//        model.addAttribute("eventHistory", testList);
 
         return "main";
     }

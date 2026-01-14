@@ -26,26 +26,61 @@
     </header>
     <div class="container">
         <div class="content-left">
-            <div class="farm-info">
+            <div class="farm-info" th:if = "${essInfo != null}">
                 <div class="farm-info-title">
                     <div class="farm-icon"><i class="fa-solid fa-leaf"></i></div>
-                    <span th:text = "${!#strings.isEmpty(essInfo.userName) ? essInfo.userName + ' 농장' : '정보 없음'}"></span>
+                    <span th:text = "${!#strings.isEmpty(essInfo.userName) ? essInfo.userName + ' 농장' : '-'}"></span>
                 </div>
                 <div class="farm-info-row">
-                    <span>ESS 명칭</span>
-                    <span th:text = "${!#strings.isEmpty(essInfo.essName) ? essInfo.essName : '정보 없음'}"></span>
+                    <div>
+                        <span>ESS 명칭</span>
+                        <span th:text = "${!#strings.isEmpty(essInfo.essName) ? essInfo.essName : '-'}"></span>
+                    </div>
+                    <div>
+                        <span>사용자명</span>
+                        <span th:text = "${!#strings.isEmpty(essInfo.userName) ? essInfo.userName : '-'}"></span>
+                    </div>
+                    <div>
+                        <span>설치 위치</span>
+                        <span th:text = "${!#strings.isEmpty(essInfo.installLocation) ? essInfo.installLocation : '-'}"></span>
+                    </div>
+                    <div>
+                        <span>설치 일자</span>
+                        <span th:text = "${essInfo.installDate != null ? #dates.format(essInfo.installDate, 'yyyy.MM.dd') : '-'}"></span>
+                    </div>
+                </div>
+
+                <div class="farm-info-icon">
+                    <div class="icon icon-orange"><i class="fa-solid fa-tower-observation"></i></div>
+                    <p class="arrow">>>></p>
+                    <div class="icon icon-green"><i class="fa-solid fa-battery-three-quarters"></i></div>
+                    <p class="arrow">>>></p>
+                    <div class="icon icon-blue"><i class="fa-solid fa-fan"></i></div>
+                </div>
+            </div>
+
+            <div class="farm-info" th:unless="${essInfo != null}">
+                <div class="farm-info-title">
+                    <div class="farm-icon"><i class="fa-solid fa-leaf"></i></div>
+                    <span>-</span>
                 </div>
                 <div class="farm-info-row">
-                    <span>사용자명</span>
-                    <span th:text = "${!#strings.isEmpty(essInfo.userName) ? essInfo.userName : '정보 없음'}"></span>
-                </div>
-                <div class="farm-info-row">
-                    <span>설치 위치</span>
-                    <span th:text = "${!#strings.isEmpty(essInfo.installLocation) ? essInfo.installLocation : '정보 없음'}"></span>
-                </div>
-                <div class="farm-info-row">
-                    <span>설치 일자</span>
-                    <span th:text = "${!#strings.isEmpty(essInfo.installDate) ? #dates.format(essInfo.installDate, 'yyyy.MM.dd') : '정보 없음'}"></span>
+                    <div>
+                        <span>ESS 명칭</span>
+                        <span>-</span>
+                    </div>
+                    <div>
+                        <span>사용자명</span>
+                        <span>-</span>
+                    </div>
+                    <div>
+                        <span>설치 위치</span>
+                        <span>-</span>
+                    </div>
+                    <div>
+                        <span>설치 일자</span>
+                        <span>-</span>
+                    </div>
                 </div>
 
                 <div class="farm-info-icon">
@@ -73,15 +108,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each = "eventHistory, status : ${eventHistory}">
+                            <tr th:if = "${eventHistory != null}"
+                                th:each = "eventHistory, status : ${eventHistory}">
                                 <td th:text = "${status.count}"></td>
                                 <td th:text = "${#temporals.format(eventHistory.eventDt, 'yyyy-MM-dd HH:mm:ss')}"></td>
                                 <td th:text = "${eventHistory.eventDesc}"></td>
                             </tr>
 
-                            <tr th:each = "i : ${#numbers.sequence(1, 9 - #lists.size(eventHistory))}"
-                                th:if="${#lists.size(eventHistory) < 9}">
-                                <td colspan="3">-</td>
+                            <tr th:if = "${eventHistory != null and #lists.size(eventHistory) < 9}"
+                                th:each = "i : ${#numbers.sequence(1, 9 - #lists.size(eventHistory))}">
+                                <td colspan = "3">-</td>
+                            </tr>
+
+                            <tr th:if = "${eventHistory == null}"
+                                th:each = "i : ${#numbers.sequence(1, 9)}">
+                                <td colspan = "3">-</td>
                             </tr>
                         </tbody>
                     </table>
@@ -128,31 +169,31 @@
             <div class="status-container">
                 <div class="status">
                     <span>상태</span>
-                    <span th:text = "${rackStatusInfo.getMbmsStatusText()}"></span>
+                    <span th:text = "${rackStatusInfo != null ? rackStatusInfo.mbmsStatus : '-'}"></span>
                 </div>  
                 <div class="metric">
                     <span>충전량</span>
-                    <span th:text = "${rackStatusInfo != null ? rackStatusInfo.rackSoc + '%' : '0.0%'}"></span>
+                    <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackSoc != null ? rackStatusInfo.rackSoc + '%' : '0.0%'}"></span>
                 </div>
                 <div class="metric">
                     <span>전압</span>
-                    <span th:text = "${rackStatusInfo != null ? rackStatusInfo.rackDcVoltage + 'V' : '0.0V'}"></span>
+                    <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackDcVoltage != null ? rackStatusInfo.rackDcVoltage + 'V' : '0.0V'}"></span>
                 </div>
                 <div class="metric">
                     <span>온도</span>
-                    <span th:text = "${rackStatusInfo != null ? rackStatusInfo.rackTemperature + '˚C' : '0.0˚C'}"></span>
+                    <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackTemperature != null ? rackStatusInfo.rackTemperature + '˚C' : '0.0˚C'}"></span>
                 </div>
                 <div class="metric">
                     <span>전류</span>
-                    <span th:text = "${rackStatusInfo != null ? rackStatusInfo.rackCurrent + 'A' : '0.0A'}"></span>
+                    <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackCurrent != null ? rackStatusInfo.rackCurrent + 'A' : '0.0A'}"></span>
                 </div>
                 <div class="metric metric-icon">
                     <span>알람 유무</span>
-                    <i class="fa-solid fa-triangle-exclamation" th:classappend="${rackStatusInfo.hasAlarm == true ? 'alarm-active' : ''}"></i>
+                    <i class="fa-solid fa-triangle-exclamation" th:classappend="${rackStatusInfo != null and rackStatusInfo.hasAlarm == true ? 'alarm-active' : ''}"></i>
                 </div>
                 <div class="metric metric-icon">
                     <span>화재감지</span>
-                    <i class="fa-solid fa-fire" th:classappend="${rackStatusInfo.fireStatus == 1 ? 'fire-active' : ''}"></i>
+                    <i class="fa-solid fa-fire" th:classappend="${rackStatusInfo != null and rackStatusInfo.fireStatus == 1 ? 'fire-active' : ''}"></i>
                 </div>
             </div>
 
@@ -170,58 +211,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>1</td>
-                            <td>대기 중</td>
-                            <td>28.13</td>
-                            <td>4.0250</td>
-                            <td>4.0042</td>
-                            <td>14.0</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>대기 중</td>
-                            <td>28.13</td>
-                            <td>4.0250</td>
-                            <td>4.0042</td>
-                            <td>14.0</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>대기 중</td>
-                            <td>28.13</td>
-                            <td>4.0250</td>
-                            <td>4.0042</td>
-                            <td>14.0</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td>대기 중</td>
-                            <td>28.13</td>
-                            <td>4.0250</td>
-                            <td>4.0042</td>
-                            <td>14.0</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td>대기 중</td>
-                            <td>28.13</td>
-                            <td>4.0250</td>
-                            <td>4.0042</td>
-                            <td>14.0</td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td>6</td>
-                            <td>대기 중</td>
-                            <td>28.13</td>
-                            <td>4.0250</td>
-                            <td>4.0042</td>
-                            <td>14.0</td>
+                        <tr th:each="moduleInfo, status : ${moduleInfo}">
+                            <td th:text="${moduleInfo.moduleId}"></td>
+                            <td th:text="${moduleInfo.batteryModuleStatus}"></td>
+                            <td th:text="${moduleInfo.moduleDcVoltage}"></td>
+                            <td th:text="${moduleInfo.maxCellVoltage}"></td>
+                            <td th:text="${moduleInfo.minCellVoltage}"></td>
+                            <td th:text="${moduleInfo.avgModuleTemperature}"></td>
                             <td></td>
                         </tr>
                     </tbody>

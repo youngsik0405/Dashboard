@@ -27,6 +27,9 @@ public class RackStatusRecent {
     @JoinColumn(name = "ess_id")
     private EssMaster essMaster;
 
+    @Column(name = "rack_device_id")
+    private Integer rackDeviceId;
+
     @Column(name = "mbms_status")
     private Integer mbmsStatus;
 
@@ -88,6 +91,21 @@ public class RackStatusRecent {
     @Column(name = "rack_voltage_cell_voltage_total_mismatch_fault1")
     private Integer rackVoltageCellVoltageTotalMismatchFault1;
 
+
+    public String getMbmsStatusText() {
+        if (mbmsStatus == null) {
+            return "-";
+        }
+
+        switch (mbmsStatus) {
+            case 0 : return "대기중";
+            case 1 : return "충전중";
+            case 2 : return "방전중";
+            case 3 : return "시스템 종료";
+            default: return "알수없음";
+        }
+    }
+
     // 알람 유무
     public boolean hasAlarm() {
 
@@ -100,15 +118,14 @@ public class RackStatusRecent {
             if (fieldName.endsWith("Warning") || fieldName.endsWith("Fault1")) {
 
                 try {
-                    field.setAccessible(true);
                     Object value = field.get(this);
 
                     // 값이 1이면 알람 있음
-                    if (value instanceof Integer && ((Integer) value) == 1) {
+                    if (Integer.valueOf(1).equals(value)) {
                         return true;
                     }
                 } catch (IllegalAccessException e) {
-                    log.warn("접근 실패", fieldName, e);
+                    log.warn("접근 실패", e);
                 }
             }
         }
