@@ -22,7 +22,8 @@ public class DashboardController {
     public String main(@RequestParam(required = false) Integer essId, Model model) {
 //        var rackStatusInfo = dashboardService.getRackStatusInfo(essId);
 //        rackStatusInfo.setHasAlarm(true);
-//        model.addAttribute("rackStatusInfo", rackStatusInfo);
+
+
         if (essId == null) {
             essId = 7;
         }
@@ -32,11 +33,8 @@ public class DashboardController {
         model.addAttribute("moduleInfo", dashboardService.getModuleInfo(essId));
         model.addAttribute("eventHistory", dashboardService.getEventHistory(essId));
 
-//        List<EventHistoryDto> list = dashboardService.getEventHistory(essId);
-//        List<EventHistoryDto> testList = list.stream()
-//                .limit(3)
-//                .toList();
-//        model.addAttribute("eventHistory", testList);
+//        model.addAttribute("rackStatusInfo", rackStatusInfo);
+//        model.addAttribute("eventHistory", dashboardService.getEventHistory(essId).stream().limit(3).toList());
 
         return "main";
     }
