@@ -5,10 +5,13 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 
 @Entity
+@Slf4j
 @Table(name = "tb_ess_module_status_recent")
 @Getter
 @Setter
@@ -51,18 +54,78 @@ public class EssModuleStatusRecent {
     @Column(name = "avg_module_temperature")
     private BigDecimal avgModuleTemperature;
 
-    public String getStatusText() {
+    // 알람
+    @Column(name = "cell_voltage_under_warning")
+    private Integer cellVoltageUnderWarning;
+
+    @Column(name = "cell_voltage_over_warning")
+    private Integer cellVoltageOverWarning;
+
+    @Column(name = "cell_voltage_max_deviation_over_warning")
+    private Integer cellVoltageMaxDeviationOverWarning;
+
+    @Column(name = "module_temperature_under_warning")
+    private Integer moduleTemperatureUnderWarning;
+
+    @Column(name = "module_temperature_over_warning")
+    private Integer moduleTemperatureOverWarning;
+
+    @Column(name = "module_temperature_max_deviation_over_warning")
+    private Integer moduleTemperatureMaxDeviationOverWarning;
+
+    @Column(name = "cell_voltage_under_fault1")
+    private Integer cellVoltageUnderFault1;
+
+    @Column(name = "cell_voltage_over_fault1")
+    private Integer cellVoltageOverFault1;
+
+    @Column(name = "cell_voltage_max_deviation_over_fault1")
+    private Integer cellVoltageMaxDeviationOverFault1;
+
+    @Column(name = "module_temperature_under_fault1")
+    private Integer moduleTemperatureUnderFault1;
+
+    @Column(name = "module_temperature_over_fault1")
+    private Integer moduleTemperatureOverFault1;
+
+    @Column(name = "module_temperature_max_deviation_over_fault1")
+    private Integer moduleTemperatureMaxDeviationOverFault1;
+
+    public String getModuleStatusText() {
         if (batteryModuleStatus == null){
             return "-";
         }
 
         switch (batteryModuleStatus) {
-            case 0 : return "대기중";
-            case 1 : return "충전중";
-            case 2 : return "방전중";
-            case 3 : return "시스템 종료";
+            case 0 : return "대기 중";
+            case 1 : return "충전 중";
+            case 2 : return "방전 중";
+            case 3 : return "연결 끊김";
             default: return "알수없음";
         }
+    }
+
+    public boolean hasAlarm() {
+
+        Field[] fields = this.getClass().getDeclaredFields();
+
+        for (Field field : fields) {
+            String fieldName = field.getName();
+
+            if (fieldName.endsWith("Warning") || fieldName.endsWith("Fault1")) {
+                try {
+                    Object value = field.get(this);
+
+                    if (Integer.valueOf(1).equals(value)) {
+                        return true;
+                    }
+                } catch (IllegalAccessException e) {
+                    log.warn("필드 접근 실패: {}", fieldName, e);
+                }
+            }
+        }
+
+        return false;
     }
 
 }

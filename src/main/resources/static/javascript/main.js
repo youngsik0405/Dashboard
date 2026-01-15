@@ -1,3 +1,42 @@
+// cellModal 열기
+async function openCellModal(essId, moduleId) {
+    const modal = document.getElementById("cellModal");
+    const modalBody = document.getElementById("cellModalBody");
+
+    // 모달 표시
+    modal.style.display = 'block';
+
+    console.log("essId=", essId, "moduleId=", moduleId);
+
+    try {
+        // 서버에 essId, moduleId 전탈하여 fragment 가져오기
+        const response = await axios.get('/api/cellModal', {
+            params: {
+                essId: essId,
+                moduleId: moduleId
+            }
+        });
+
+        console.log("status:", response.status);
+        console.log("content-type:", response.headers["content-type"]);
+        console.log("data preview:", (response.data || "").toString().substring(0, 200));
+
+        // 서버에서 가져온 데이터를 삽입
+        modalBody.innerHTML = response.data;
+
+        console.log("cellModalBody innerHTML length:", modalBody.innerHTML.length);
+    } catch (error) {
+        console.error('Cell 정보 조회 실패:', error);
+    }
+}
+
+// cellModal 닫기
+function closeCellModal() {
+    const modal = document.getElementById('cellModal');
+    modal.style.display = 'none';
+}
+
+
 function switchAlertTab(tabName, clickedButton) {
     // 모든 버튼 비활성화
     document.querySelectorAll('.tab-button').forEach(function (button) {

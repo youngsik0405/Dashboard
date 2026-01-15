@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.net.InterfaceAddress;
+
 
 @Entity
 @Slf4j
@@ -98,10 +98,10 @@ public class RackStatusRecent {
         }
 
         switch (mbmsStatus) {
-            case 0 : return "대기중";
-            case 1 : return "충전중";
-            case 2 : return "방전중";
-            case 3 : return "시스템 종료";
+            case 0 : return "대기 중";
+            case 1 : return "충전 중";
+            case 2 : return "방전 중";
+            case 3 : return "연결 끊김";
             default: return "알수없음";
         }
     }
@@ -125,7 +125,7 @@ public class RackStatusRecent {
                         return true;
                     }
                 } catch (IllegalAccessException e) {
-                    log.warn("접근 실패", e);
+                    log.warn("필드 접근 실패: {}", fieldName, e);
                 }
             }
         }

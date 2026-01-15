@@ -1,5 +1,6 @@
 package com.qsol.dashboard.controller;
 
+import com.qsol.dashboard.dto.EssCellStatusDto;
 import com.qsol.dashboard.dto.EventHistoryDto;
 import com.qsol.dashboard.entity.EventHistory;
 import com.qsol.dashboard.service.DashboardService;
@@ -9,8 +10,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Collections;
 import java.util.List;
+
 
 @Controller
 @RequiredArgsConstructor
@@ -35,7 +36,14 @@ public class DashboardController {
 
 //        model.addAttribute("rackStatusInfo", rackStatusInfo);
 //        model.addAttribute("eventHistory", dashboardService.getEventHistory(essId).stream().limit(3).toList());
+//        model.addAttribute("moduleInfo",dashboardService.getModuleInfo(essId).stream().limit(3).toList());
 
         return "main";
+    }
+
+    @GetMapping("/api/cellModal")
+    public String getCellModal(@RequestParam Integer essId, @RequestParam Integer moduleId, Model model) {
+        model.addAttribute("cellInfo", dashboardService.getCellInfo(essId, moduleId));
+        return "main :: cellModalContent";
     }
 }

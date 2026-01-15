@@ -18,15 +18,17 @@ public class EssModuleStatusDto {
     private BigDecimal maxCellVoltage;
     private BigDecimal minCellVoltage;
     private BigDecimal avgModuleTemperature;
+    private Boolean hasAlarm;
 
     public static EssModuleStatusDto from(EssModuleStatusRecent essModuleStatusRecent) {
         return new EssModuleStatusDto(
                 essModuleStatusRecent.getModuleId(),
-                essModuleStatusRecent.getStatusText(),
+                essModuleStatusRecent.getModuleStatusText(),
                 essModuleStatusRecent.getModuleDcVoltage(),
                 essModuleStatusRecent.getMaxCellVoltage(),
                 essModuleStatusRecent.getMinCellVoltage(),
-                essModuleStatusRecent.getAvgModuleTemperature()
+                essModuleStatusRecent.getAvgModuleTemperature(),
+                essModuleStatusRecent.hasAlarm()
         );
     }
 }

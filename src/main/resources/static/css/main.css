@@ -258,75 +258,95 @@ td {
 /* 농장 상태 영역 */
 .status-container {
     margin-bottom: 20px;
-    font-size: 0;
-    text-align: justify;
 }
 
 .status-container::after{
-  content:"";
-  display: inline-block;
-  width: 100%;
+    content:"";
+    display: inline-block;
+    width: 100%;
 }
 
 /* 상태 */
 .status {
+    font-size: 0;
+    text-align: justify;
+}
+
+.status::after {
+    content: "";
+    display: inline-block;
+    width: 100%;
+}
+
+.status div {
     display: inline-block;
     vertical-align: top;
     padding: 20px;
     border-radius: 12px;
-    background-color: #EBF5FF;
     font-size: 14px;
 }
 
-.status span:first-child {
+.status div:nth-child(1) {
+    background-color: #EBF5FF;
+    width: 18%;
+}
+
+.status div:nth-child(2),
+.status div:nth-child(3),
+.status div:nth-child(4),
+.status div:nth-child(5) {
+    background-color: #5BD75B;
+    width: 10%;
+}
+
+.status div:nth-child(6),
+.status div:nth-child(7) {
+    width: 7%;
+    background-color: #5BD75B;
+    text-align: center;
+}
+
+.status div span:first-child {
     display: block;
+    width: 100%;
     color: #56ACFF;
     padding-bottom: 15px;
 }
 
-.status span:last-child {
+.status div span:last-child {
     display: block;
-    width: 250px;
+    width: 100%;
     font-size: 32px;
     font-weight: bold;
     color: #56ACFF;
 }
 
-/* 측정값 */
-.metric {
-    display: inline-block;
-    vertical-align: top;
-    background-color: #5BD75B;
-    border-radius: 12px;
-    padding: 20px;
-    font-size: 14px;
-}
-
-.metric span:first-child {
+.status div:nth-child(2) span:first-child,
+.status div:nth-child(3) span:first-child,
+.status div:nth-child(4) span:first-child,
+.status div:nth-child(5) span:first-child {
     display: block;
     color: white;
     padding-bottom: 15px;
 }
 
-.metric span:last-child {
+.status div:nth-child(2) span:last-child,
+.status div:nth-child(3) span:last-child,
+.status div:nth-child(4) span:last-child,
+.status div:nth-child(5) span:last-child {
     display: block;
-    width: 130px;
     font-size: 32px;
-    font-weight: bold;
+    font-weight: 600;
     color: yellow;
 }
 
-/* 알람/화재감지 */
-.metric-icon {
-    width: 80px;
-    text-align: center;
-}
-
-.metric-icon span {
+.status div:nth-child(6) span,
+.status div:nth-child(7) span {
+    color: white;
     text-align: left;
 }
 
-.metric i {
+.status div i {
     font-size: 18px;
     color: #C6C6C6;
     width: 32px;
@@ -336,13 +356,14 @@ td {
     align-content: center;
 }
 
-.metric i.alarm-active {
+.status div i.alarm-active {
     color: #FF6A33;
 }
 
-.metric i.fire-active {
+.status div i.fire-active {
     color: #FF6A33;
 }
+
 /* =================================================================================================================================== */
 
 /* 모듈 데이터 테이블 영역 */
@@ -353,17 +374,40 @@ td {
     overflow: hidden;
 }
 
+.module-data-scroll {
+    max-height: 314px;
+    overflow-y: auto;
+}
+
 .module-data-table table {
     border-style: hidden;
+}
+
+.module-data-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .module-data-table th {
     font-size: 14px;
 }
 
+.module-data-table tr {
+    cursor: pointer;
+}
+
+.module-data-table tr:hover {
+    background-color: #f3f4f6;
+}
+
 .module-data-table td {
     font-size: 14px;
     padding: 15px;
+}
+
+.module-data-table i {
+    color: #FF6A33;
 }
 
 /* =================================================================================================================================== */
