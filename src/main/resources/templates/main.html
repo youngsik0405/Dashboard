@@ -8,7 +8,6 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/header.css}">
     <link rel="stylesheet" th:href="@{/css/footer.css}">
-    <link rel="stylesheet" th:href="@{/css/modal.css}">
     <script src="https://kit.fontawesome.com/16a62b2266.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
@@ -28,62 +27,55 @@
     </header>
     <div class="container">
         <div class="content-left">
-            <div class="farm-info" th:if = "${essInfo != null}">
-                <div class="farm-info-title">
-                    <div class="farm-icon"><i class="fa-solid fa-leaf"></i></div>
-                    <span th:text = "${!#strings.isEmpty(essInfo.userName) ? essInfo.userName + ' 농장' : '-'}"></span>
-                </div>
-                <div class="farm-info-row">
-                    <div>
-                        <span>ESS 명칭</span>
-                        <span th:text = "${!#strings.isEmpty(essInfo.essName) ? essInfo.essName : '-'}"></span>
+            <div class="farm-info">
+                <th:block th:if="${essInfo != null}">
+                    <div class="farm-info-title">
+                        <div class="farm-icon"><i class="fa-solid fa-leaf"></i></div>
+                        <span th:text = "${essInfo.userName != null ? essInfo.userName + ' 농장' : '-'}"></span>
                     </div>
-                    <div>
-                        <span>사용자명</span>
-                        <span th:text = "${!#strings.isEmpty(essInfo.userName) ? essInfo.userName : '-'}"></span>
+                    <div class="farm-info-row">
+                        <div>
+                            <span>ESS 명칭</span>
+                            <span th:text = "${essInfo.essName != null ? essInfo.essName : '-'}"></span>
+                        </div>
+                        <div>
+                            <span>사용자명</span>
+                            <span th:text = "${essInfo.userName != null ? essInfo.userName : '-'}"></span>
+                        </div>
+                        <div>
+                            <span>설치 위치</span>
+                            <span th:text = "${essInfo.installLocation != null ? essInfo.installLocation : '-'}"></span>
+                        </div>
+                        <div>
+                            <span>설치 일자</span>
+                            <span th:text = "${essInfo.installDate != null ? #dates.format(essInfo.installDate, 'yyyy.MM.dd') : '-'}"></span>
+                        </div>
                     </div>
-                    <div>
-                        <span>설치 위치</span>
-                        <span th:text = "${!#strings.isEmpty(essInfo.installLocation) ? essInfo.installLocation : '-'}"></span>
-                    </div>
-                    <div>
-                        <span>설치 일자</span>
-                        <span th:text = "${essInfo.installDate != null ? #dates.format(essInfo.installDate, 'yyyy.MM.dd') : '-'}"></span>
-                    </div>
-                </div>
-
-                <div class="farm-info-icon">
-                    <div class="icon icon-orange"><i class="fa-solid fa-tower-observation"></i></div>
-                    <p class="arrow">>>></p>
-                    <div class="icon icon-green"><i class="fa-solid fa-battery-three-quarters"></i></div>
-                    <p class="arrow">>>></p>
-                    <div class="icon icon-blue"><i class="fa-solid fa-fan"></i></div>
-                </div>
-            </div>
-
-            <div class="farm-info" th:unless="${essInfo != null}">
-                <div class="farm-info-title">
-                    <div class="farm-icon"><i class="fa-solid fa-leaf"></i></div>
-                    <span>-</span>
-                </div>
-                <div class="farm-info-row">
-                    <div>
-                        <span>ESS 명칭</span>
+                </th:block>
+                <th:block th:unless="${essInfo != null}">
+                    <div class="farm-info-title">
+                        <div class="farm-icon"><i class="fa-solid fa-leaf"></i></div>
                         <span>-</span>
                     </div>
-                    <div>
-                        <span>사용자명</span>
-                        <span>-</span>
+                    <div class="farm-info-row">
+                        <div>
+                            <span>ESS 명칭</span>
+                            <span>-</span>
+                        </div>
+                        <div>
+                            <span>사용자명</span>
+                            <span>-</span>
+                        </div>
+                        <div>
+                            <span>설치 위치</span>
+                            <span>-</span>
+                        </div>
+                        <div>
+                            <span>설치 일자</span>
+                            <span>-</span>
+                        </div>
                     </div>
-                    <div>
-                        <span>설치 위치</span>
-                        <span>-</span>
-                    </div>
-                    <div>
-                        <span>설치 일자</span>
-                        <span>-</span>
-                    </div>
-                </div>
+                </th:block>
 
                 <div class="farm-info-icon">
                     <div class="icon icon-orange"><i class="fa-solid fa-tower-observation"></i></div>
@@ -97,10 +89,12 @@
             <!--이벤트 히스토리-->
             <div class="alert-info">
                 <div class="tab-buttons">
-                    <button class = "tab-button active" onclick="switchAlertTab('event', this)">이벤트 발생 내역</button>
-                    <button class = "tab-button" onclick="switchAlertTab('discharge', this)">방전 내역</button>
+                    <button class = "event_1 tab-button active" onclick="switchAlertTab('event_1', this)">이벤트 발생 내역</button>
+                    <button class = "event_2 tab-button" onclick="switchAlertTab('event_2', this)">방전 내역</button>
+                    <!--<button class = "event_1 tab-button active" onclick="switchAlertTab('event', this)">이벤트 발생 내역</button>
+                    <button class = "event_2 tab-button" onclick="switchAlertTab('discharge', this)">방전 내역</button>-->
                 </div>
-                <div class="tab-content active" id="eventContent">
+                <div class="event_1 tab-content active" id="eventContent">
                     <table>
                         <thead>
                             <tr>
@@ -124,7 +118,7 @@
                 </div>
 
 
-                <div class="tab-content" id="dischargeContent">
+                <div class="event_2 tab-content" id="dischargeContent">
                     <table>
                         <thead>
                             <tr>
@@ -153,6 +147,24 @@
                                 <td>2026-01-01 11:11:11</td>
                                 <td>2026-01-01 11:11:11</td>
                             </tr>
+                            <tr>
+                                <td colspan="4">-</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">-</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">-</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">-</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">-</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4">-</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -169,19 +181,19 @@
                     </div>
                     <div>
                         <span>충전량</span>
-                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackSoc != null ? rackStatusInfo.rackSoc + '%' : '0.0%'}"></span>
+                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackSoc != null ? rackStatusInfo.rackSoc + '%' : '-'}"></span>
                     </div>
                     <div>
                         <span>전압</span>
-                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackDcVoltage != null ? rackStatusInfo.rackDcVoltage + 'V' : '0.0V'}"></span>
+                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackDcVoltage != null ? rackStatusInfo.rackDcVoltage + 'V' : '-'}"></span>
                     </div>
                     <div>
                         <span>온도</span>
-                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackTemperature != null ? rackStatusInfo.rackTemperature + '˚C' : '0.0˚C'}"></span>
+                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackTemperature != null ? rackStatusInfo.rackTemperature + '˚C' : '-'}"></span>
                     </div>
                     <div>
                         <span>전류</span>
-                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackCurrent != null ? rackStatusInfo.rackCurrent + 'A' : '0.0A'}"></span>
+                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackCurrent != null ? rackStatusInfo.rackCurrent + 'A' : '-'}"></span>
                     </div>
                     <div>
                         <span>알람 유무</span>
@@ -189,7 +201,7 @@
                     </div>
                     <div>
                         <span>화재감지</span>
-                        <i class="fa-solid fa-fire" th:classappend="${rackStatusInfo != null and rackStatusInfo.fireStatus == 1 ? 'fire-active' : ''}"></i>
+                        <i class="fa-solid fa-fire" th:classappend="${fireStatusInfo != null and fireStatusInfo.fireStatus == 1 ? 'fire-active' : ''}"></i>
                     </div>
                 </div>
             </div>
@@ -209,7 +221,7 @@
                                 <th>알람 유무</th>
                             </tr>
                         </thead>
-                        <tbody th:with="size = ${moduleInfo == null ? 0 : #lists.size(moduleInfo)}">
+                        <tbody th:if="${essInfo != null}" th:with="size = ${moduleInfo == null ? 0 : #lists.size(moduleInfo)}">
                             <tr th:each="module : ${moduleInfo}" th:onclick="|openCellModal(${essInfo.essId}, ${module.moduleId})|">
                                 <td th:text="${module.moduleId != null ? module.moduleId : '-'}"></td>
                                 <td th:text="${!#strings.isEmpty(module.batteryModuleStatus) ? module.batteryModuleStatus : '-'}"></td>
@@ -227,6 +239,13 @@
                                 <td colspan = "7">-</td>
                             </tr>
                         </tbody>
+
+                        <tbody th:unless="${essInfo != null}">
+                        <tr th:each="i : ${#numbers.sequence(1, 6)}">
+                            <td colspan="7">-</td>
+                        </tr>
+                        </tbody>
+
                     </table>
                 </div>
             </div>
@@ -299,29 +318,27 @@
 
 
     <div th:fragment="cellModalContent" class="cellModalContent">
-        <table>
-            <thead>
-                <tr>
-                    <th>모듈 번호</th>
-                    <th>셀 번호</th>
-                    <th>전압</th>
-                </tr>
-            </thead>
-            <tbody th:if="${cellInfo != null and #lists.size(cellInfo) > 0}">
-                <tr th:each="cell : ${cellInfo}">
-                    <td th:text="${cell.moduleId != null ? cell.moduleId : '-'}"></td>
-                    <td th:text="${cell.cellId != null ? cell.cellId : '-'}"></td>
-                    <td th:text="${cell.voltage != null ? cell.voltage : '-'}"></td>
-                </tr>
-            </tbody>
-            <tbody th:unless="${cellInfo != null and #lists.size(cellInfo) > 0}">
-                <tr>
-                    <td>-</td>
-                    <td>-</td>
-                    <td>-</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="cell-modal-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>모듈 번호</th>
+                        <th>셀 번호</th>
+                        <th>전압</th>
+                    </tr>
+                </thead>
+                <tbody th:with="size = ${cellInfo == null ? 0 : #lists.size(cellInfo) }">
+                    <tr th:each="cell : ${cellInfo}">
+                        <td th:text="${cell.moduleId != null ? cell.moduleId : '-'}"></td>
+                        <td th:text="${cell.cellId != null ? cell.cellId : '-'}"></td>
+                        <td th:text="${cell.voltage != null ? cell.voltage : '-'}"></td>
+                    </tr>
+                    <tr th:if="${size < 6}" th:each = "i : ${#numbers.sequence(1, 6 - size)}">
+                        <td colspan="3">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <footer>

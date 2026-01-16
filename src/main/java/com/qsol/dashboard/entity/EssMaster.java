@@ -3,7 +3,9 @@ package com.qsol.dashboard.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name="tb_ess_master")
@@ -25,5 +27,9 @@ public class EssMaster {
 
     @Column(name = "install_date")
     private Date installDate;
+
+    @OneToMany
+    @JoinColumn(name = "ess_id")
+    private List<MemberEss> memberEssList = new ArrayList<>();
 
 }

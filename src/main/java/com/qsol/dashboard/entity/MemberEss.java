@@ -21,9 +21,8 @@ public class MemberEss {
     @JoinColumn(name = "user_id")
     private Member member;
 
-    @ManyToOne
-    @JoinColumn(name = "ess_id")
-    private EssMaster essMaster;
+    @Column(name = "ess_id")
+    private Integer essId;
 
 
 }

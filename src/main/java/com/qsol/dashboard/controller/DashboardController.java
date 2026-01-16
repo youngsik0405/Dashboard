@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Controller
@@ -24,19 +25,19 @@ public class DashboardController {
 //        var rackStatusInfo = dashboardService.getRackStatusInfo(essId);
 //        rackStatusInfo.setHasAlarm(true);
 
-
         if (essId == null) {
             essId = 7;
         }
 
-        model.addAttribute("essInfo", dashboardService.getEssInfo(essId));
-        model.addAttribute("rackStatusInfo", dashboardService.getRackStatusInfo(essId));
-        model.addAttribute("moduleInfo", dashboardService.getModuleInfo(essId));
-        model.addAttribute("eventHistory", dashboardService.getEventHistory(essId));
+        Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
+
+        model.addAttribute("essInfo", dashboardData.get("essInfo"));
+        model.addAttribute("rackStatusInfo", dashboardData.get("rackStatusInfo"));
+        model.addAttribute("fireStatusInfo", dashboardData.get("fireStatusInfo"));
+        model.addAttribute("moduleInfo", dashboardData.get("moduleInfo"));
+        model.addAttribute("eventHistory", dashboardData.get("eventHistory"));
 
 //        model.addAttribute("rackStatusInfo", rackStatusInfo);
-//        model.addAttribute("eventHistory", dashboardService.getEventHistory(essId).stream().limit(3).toList());
-//        model.addAttribute("moduleInfo",dashboardService.getModuleInfo(essId).stream().limit(3).toList());
 
         return "main";
     }

@@ -8,13 +8,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 public class DashboardService {
 
     private final MemberEssRepository memberEssRepository;
@@ -23,13 +26,27 @@ public class DashboardService {
     private final EventHistoryRepository eventHistoryRepository;
     private final EssModuleStatusRecentRepository essModuleStatusRecentRepository;
     private final EssCellStatusRecentRepository essCellStatusRecentRepository;
+    private final EssMasterRepository essMasterRepository;
+
+
+    // 대시보드에 필요한 모든 데이터
+    public Map<String, Object> getDashboardData(Integer essId) {
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("essInfo", getEssInfo(essId));
+        result.put("rackStatusInfo", getRackStatusInfo(essId));
+        result.put("fireStatusInfo", getFireStatusInfo(essId));
+        result.put("moduleInfo", getModuleInfo(essId));
+        result.put("eventHistory", getEventHistory(essId));
+
+        return result;
+    }
 
     // Ess 정보
-    @Transactional(readOnly = true)
     public EssInfoDto getEssInfo(Integer essId) {
 
         try {
-            MemberEss memberEss = memberEssRepository.findByEssMaster_Id(essId);
+           EssMaster essMaster = memberEssRepository.findByEssId(essId);
 
             if (memberEss == null) {
                 return null;
@@ -43,17 +60,16 @@ public class DashboardService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public StatusInfoDto getRackStatusInfo(Integer essId) {
-        try {
-            RackStatusRecent rackStatusRecent = rackStatusRecentRepository.findByEssMaster_Id(essId);
-            FireStatusRecent fireStatusRecent = fireStatusRecentRepository.findByEssId(essId);
 
-            if  (rackStatusRecent == null && fireStatusRecent == null) {
+    public RackStatusDto getRackStatusInfo(Integer essId) {
+        try {
+            RackStatusRecent rackStatusRecent = rackStatusRecentRepository.findByEssId(essId);
+
+            if  (rackStatusRecent == null) {
                 return null;
             }
 
-            return StatusInfoDto.from(rackStatusRecent, fireStatusRecent);
+            return RackStatusDto.from(rackStatusRecent);
 
         } catch (Exception e) {
             log.error("RackStatusInfo 조회 실패 essId={}", essId, e);
@@ -61,7 +77,25 @@ public class DashboardService {
         }
     }
 
-    @Transactional(readOnly = true)
+    public FireStatusDto getFireStatusInfo(Integer essId) {
+        try {
+            FireStatusRecent fireStatusRecent = fireStatusRecentRepository.findByEssId(essId);
+
+            if (fireStatusRecent == null) {
+                return null;
+            }
+
+            return FireStatusDto.from(fireStatusRecent);
+        } catch (Exception e) {
+            log.error("FireStatusInfo 조회 실패 essId={}", essId, e);
+            return null;
+        }
+    }
+
+
+
+
+
     public List<EventHistoryDto> getEventHistory(Integer essId) {
         try {
             return eventHistoryRepository.findTop9ByEssIdOrderByEventDtDesc(essId).stream().map(EventHistoryDto::from).toList();
@@ -71,7 +105,7 @@ public class DashboardService {
         }
     }
 
-    @Transactional(readOnly = true)
+
     public List<EssModuleStatusDto> getModuleInfo(Integer essId) {
         try {
             return essModuleStatusRecentRepository.findByEssIdWithRack(essId).stream().map(EssModuleStatusDto::from).toList();
@@ -81,15 +115,16 @@ public class DashboardService {
         }
     }
 
-    @Transactional(readOnly = true)
+
     public List<EssCellStatusDto> getCellInfo(Integer essId, Integer moduleId) {
         try {
-            return essCellStatusRecentRepository.findByEssIdAndModuleIdOrderByCellId(essId, moduleId).stream().map(EssCellStatusDto::from).toList();
+            return essCellStatusRecentRepository.findByEssIdAndModuleIdOrderByCellIdAcs(essId, moduleId).stream().map(EssCellStatusDto::from).toList();
         } catch (Exception e) {
             log.error("CellInfo 조회 실패 essId={}, moduleId={}", essId, moduleId, e);
             return List.of();
         }
     }
+
 
 
 }

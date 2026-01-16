@@ -24,7 +24,6 @@ async function openCellModal(essId, moduleId) {
         // 서버에서 가져온 데이터를 삽입
         modalBody.innerHTML = response.data;
 
-        console.log("cellModalBody innerHTML length:", modalBody.innerHTML.length);
     } catch (error) {
         console.error('Cell 정보 조회 실패:', error);
     }
@@ -36,20 +35,37 @@ function closeCellModal() {
     modal.style.display = 'none';
 }
 
+//
+// function switchAlertTab(tabName, clickedButton) {
+//     // 모든 버튼 비활성화
+//     document.querySelectorAll('.tab-button').forEach(function (button) {
+//         button.classList.remove('active');
+//     });
+//     // 선택한 버튼 활성화
+//     clickedButton.classList.add('active');
+//
+//     // 모든 탭내용 비활성화
+//     document.querySelectorAll('.tab-content').forEach(function (content) {
+//         content.classList.remove('active');
+//     });
+//
+//     // 선택한 탭 내용 활성화
+//     document.getElementById(tabName + 'Content').classList.add('active');
+// }
 
-function switchAlertTab(tabName, clickedButton) {
-    // 모든 버튼 비활성화
-    document.querySelectorAll('.tab-button').forEach(function (button) {
-        button.classList.remove('active');
-    });
-    // 선택한 버튼 활성화
-    clickedButton.classList.add('active');
 
-    // 모든 탭내용 비활성화
-    document.querySelectorAll('.tab-content').forEach(function (content) {
+function switchAlertTab(className, clickedButton) {
+//    ㅋㅡㄹ릭한 버튼이 event_1이면
+    document.querySelectorAll(className).forEach(function (content) {
+        content.classList.remove('active');
         content.classList.remove('active');
     });
 
-    // 선택한 탭 내용 활성화
-    document.getElementById(tabName + 'Content').classList.add('active');
+    document.querySelectorAll(className).forEach(function (button) {
+        button.classList.remove('active');
+        button.classList.remove('active');
+    });
+
+
+
 }

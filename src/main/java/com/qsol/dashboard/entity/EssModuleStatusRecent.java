@@ -91,6 +91,7 @@ public class EssModuleStatusRecent {
     @Column(name = "module_temperature_max_deviation_over_fault1")
     private Integer moduleTemperatureMaxDeviationOverFault1;
 
+    // 모듈 상태 메세지
     public String getModuleStatusText() {
         if (batteryModuleStatus == null){
             return "-";
@@ -105,17 +106,24 @@ public class EssModuleStatusRecent {
         }
     }
 
+    // 알람 유무
     public boolean hasAlarm() {
 
+        // 현재 객체의 클래스에 선언된 모든 필드
         Field[] fields = this.getClass().getDeclaredFields();
 
+        // 반복문으로 모든 필드를 하나씩 검사
         for (Field field : fields) {
+            // 필드이름을 문자열로
             String fieldName = field.getName();
 
+            // 필드 이름이 Warning 이나 Fault1으로 끝나는 것만 알람 체크 대상
             if (fieldName.endsWith("Warning") || fieldName.endsWith("Fault1")) {
                 try {
+                    // 현재 객체에서 해당 field 값
                     Object value = field.get(this);
 
+                    // 값이 1이면 알람 발생으로 판단하고 true 반환
                     if (Integer.valueOf(1).equals(value)) {
                         return true;
                     }

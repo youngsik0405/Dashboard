@@ -13,6 +13,4 @@ public class EssDischargeHistoryDto {
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-
-
 }

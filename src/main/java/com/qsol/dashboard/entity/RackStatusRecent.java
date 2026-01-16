@@ -23,9 +23,8 @@ public class RackStatusRecent {
     @Column(name = "id_number")
     private Long idNumber;
 
-    @ManyToOne
-    @JoinColumn(name = "ess_id")
-    private EssMaster essMaster;
+    @Column(name = "ess_id")
+    private Integer essId;
 
     @Column(name = "rack_device_id")
     private Integer rackDeviceId;
@@ -92,6 +91,7 @@ public class RackStatusRecent {
     private Integer rackVoltageCellVoltageTotalMismatchFault1;
 
 
+    // 랙 상태 메세지
     public String getMbmsStatusText() {
         if (mbmsStatus == null) {
             return "-";
@@ -114,13 +114,11 @@ public class RackStatusRecent {
         for (Field field : fields) {
             String fieldName = field.getName();
 
-            // warning 또는 fault1 으로 끝나는 컬럼만 체크
             if (fieldName.endsWith("Warning") || fieldName.endsWith("Fault1")) {
 
                 try {
                     Object value = field.get(this);
 
-                    // 값이 1이면 알람 있음
                     if (Integer.valueOf(1).equals(value)) {
                         return true;
                     }

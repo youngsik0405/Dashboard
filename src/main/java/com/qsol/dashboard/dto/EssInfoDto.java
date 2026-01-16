@@ -1,5 +1,6 @@
 package com.qsol.dashboard.dto;
 
+import com.qsol.dashboard.entity.EssMaster;
 import com.qsol.dashboard.entity.MemberEss;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,13 +20,13 @@ public class EssInfoDto {
     private Date installDate;
     private String userName;
 
-    public static EssInfoDto from(MemberEss memberEss) {
+    public static EssInfoDto from(EssMaster essMaster) {
         return new EssInfoDto(
-                memberEss.getEssMaster().getId(),
-                memberEss.getEssMaster().getEssName(),
-                memberEss.getEssMaster().getInstallLocation(),
-                memberEss.getEssMaster().getInstallDate(),
-                memberEss.getMember().getUserName()
+                essMaster.getId(),
+                essMaster.getEssName(),
+                essMaster.getInstallLocation(),
+                essMaster.getInstallDate(),
+                essMaster.getMemberEssList().get(0).getMember().getUserName()
         );
     }
 
