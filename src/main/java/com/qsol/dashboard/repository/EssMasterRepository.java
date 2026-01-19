@@ -8,8 +8,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EssMasterRepository extends JpaRepository<EssMaster, Integer> {
 
-    @Query("SELECT em from EssMaster em " +
-            "")
-    EssMaster findByIdWithMembers(Integer essId);
+    @Query("SELECT em FROM EssMaster em " +
+            "LEFT JOIN em.memberEssList mel " +
+            "LEFT JOIN mel.member " +
+            "WHERE em.id = :essId")
+    EssMaster findByIdWithJoin(Integer essId);
 
 }

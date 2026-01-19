@@ -46,13 +46,13 @@ public class DashboardService {
     public EssInfoDto getEssInfo(Integer essId) {
 
         try {
-           EssMaster essMaster = memberEssRepository.findByEssId(essId);
+           EssMaster essMaster = essMasterRepository.findByIdWithJoin(essId);
 
-            if (memberEss == null) {
+            if (essMaster == null) {
                 return null;
             }
 
-            return EssInfoDto.from(memberEss);
+            return EssInfoDto.from(essMaster);
 
         } catch (Exception e) {
             log.error("EssInfo 조회 실패 essId={}", essId, e);
@@ -93,9 +93,6 @@ public class DashboardService {
     }
 
 
-
-
-
     public List<EventHistoryDto> getEventHistory(Integer essId) {
         try {
             return eventHistoryRepository.findTop9ByEssIdOrderByEventDtDesc(essId).stream().map(EventHistoryDto::from).toList();
@@ -118,7 +115,7 @@ public class DashboardService {
 
     public List<EssCellStatusDto> getCellInfo(Integer essId, Integer moduleId) {
         try {
-            return essCellStatusRecentRepository.findByEssIdAndModuleIdOrderByCellIdAcs(essId, moduleId).stream().map(EssCellStatusDto::from).toList();
+            return essCellStatusRecentRepository.findByEssIdAndModuleIdOrderByCellIdAsc(essId, moduleId).stream().map(EssCellStatusDto::from).toList();
         } catch (Exception e) {
             log.error("CellInfo 조회 실패 essId={}, moduleId={}", essId, moduleId, e);
             return List.of();

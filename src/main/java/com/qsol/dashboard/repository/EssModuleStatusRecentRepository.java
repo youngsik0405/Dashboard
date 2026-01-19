@@ -10,6 +10,6 @@ import java.util.List;
 public interface EssModuleStatusRecentRepository extends JpaRepository<EssModuleStatusRecent, Long> {
     @Query("SELECT m FROM EssModuleStatusRecent m " +
             "JOIN m.rackStatusRecent r " +
-            "WHERE r.essMaster.id = :essId")
+            "WHERE r.essId = :essId")
     List<EssModuleStatusRecent> findByEssIdWithRack(Integer essId);
 }

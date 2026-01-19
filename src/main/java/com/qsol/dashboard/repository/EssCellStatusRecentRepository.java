@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface EssCellStatusRecentRepository extends JpaRepository<EssCellStatusRecent, Long> {
-    List<EssCellStatusRecent> findByEssIdAndModuleIdOrderByCellIdAcs(Integer essId, Integer moduleId);
+    List<EssCellStatusRecent> findByEssIdAndModuleIdOrderByCellIdAsc(Integer essId, Integer moduleId);
 }
