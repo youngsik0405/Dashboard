@@ -163,6 +163,10 @@ td {
     text-align: center;
 }
 
+.tab-button:hover {
+    cursor: pointer;
+}
+
 .tab-button:first-child {
     border-right: none;
 }
@@ -393,12 +397,9 @@ td {
     font-size: 14px;
 }
 
-.module-data-table tr {
-    cursor: pointer;
-}
-
 .module-data-table tr:hover {
-    background-color: #D6F5D6;;
+    background-color: #D6F5D6;
+    cursor: pointer;
 }
 
 .module-data-table td {
@@ -572,6 +573,10 @@ td {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
+}
+
+.cellModal.active {
+    display: block;
 }
 
 .modal-content {

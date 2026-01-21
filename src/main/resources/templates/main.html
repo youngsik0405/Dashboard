@@ -93,71 +93,65 @@
                 <div class="tab-buttons">
                     <button class = "tab-button event_1 active" onclick="switchAlertTab('event_1')">이벤트 발생 내역</button>
                     <button class = "tab-button event_2" onclick="switchAlertTab('event_2')">방전 내역</button>
-                    <!--<button class = "event_1 tab-button active" onclick="switchAlertTab('event', this)">이벤트 발생 내역</button>
-                    <button class = "event_2 tab-button" onclick="switchAlertTab('discharge', this)">방전 내역</button>-->
                 </div>
                 <div class="tab-content event_1 active" id="eventContent">
-                    <th:block th:fragment="eventHistoryFragment">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>번호</th>
-                                    <th>발생시간</th>
-                                    <th>발생내용</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each = "event, status : ${eventHistory}">
-                                    <td th:text = "${status.count}"></td>
-                                    <td th:text = "${event.eventDt != null ? #temporals.format(event.eventDt, 'yyyy-MM-dd HH:mm:ss') : '-'}"></td>
-                                    <td th:text = "${event.eventDesc != null ? event.eventDesc : '-'}"></td>
-                                </tr>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>발생시간</th>
+                                <th>발생내용</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each = "event, status : ${eventHistory}">
+                                <td th:text = "${status.count}"></td>
+                                <td th:text = "${event.eventDt != null ? #temporals.format(event.eventDt, 'yyyy-MM-dd HH:mm:ss') : '-'}"></td>
+                                <td th:text = "${event.eventDesc != null ? event.eventDesc : '-'}"></td>
+                            </tr>
 
-                                <tr th:if = "${eventHistorySize < 9}" th:each = "i : ${#numbers.sequence(1, 9 - eventHistorySize)}">
-                                    <td colspan = "3">-</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </th:block>
+                            <tr th:if = "${sizeMap.get('eventHistorySize') < 9}" th:each = "i : ${#numbers.sequence(1, 9 - sizeMap.get('eventHistorySize'))}">
+                                <td colspan = "3">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
 
                 <div class="tab-content event_2" id="dischargeContent">
-                    <div th:fragment="dischargeHistoryFragment">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>번호</th>
-                                    <th>시작시간</th>
-                                    <th>종료시간</th>
-                                    <th>방전시간</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>2026-01-01 11:11:11</td>
-                                    <td>2026-01-01 11:11:11</td>
-                                    <td>2026-01-01 11:11:11</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>2025-12-30 01:31:25</td>
-                                    <td>2026-01-01 11:11:11</td>
-                                    <td>2026-01-01 11:11:11</td>
-                                </tr>
-                                <tr>
-                                    <td>3</td>
-                                    <td>2025-12-31 01:35:25</td>
-                                    <td>2026-01-01 11:11:11</td>
-                                    <td>2026-01-01 11:11:11</td>
-                                </tr>
-                                <tr th:each="i : ${#numbers.sequence(1, 6)}">
-                                    <td colspan="4">-</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>번호</th>
+                                <th>시작시간</th>
+                                <th>종료시간</th>
+                                <th>방전시간</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>2026-01-01 11:11:11</td>
+                                <td>2026-01-01 11:11:11</td>
+                                <td>2026-01-01 11:11:11</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>2025-12-30 01:31:25</td>
+                                <td>2026-01-01 11:11:11</td>
+                                <td>2026-01-01 11:11:11</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>2025-12-31 01:35:25</td>
+                                <td>2026-01-01 11:11:11</td>
+                                <td>2026-01-01 11:11:11</td>
+                            </tr>
+                            <tr th:each="i : ${#numbers.sequence(1, 6)}">
+                                <td colspan="4">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -165,7 +159,7 @@
         <!--랙 상태-->
         <div class="content-right">
             <div class="status-container" id="statusContainer">
-                <div th:fragment="statusFragment" class="status">
+                <div class="status">
                     <div>
                         <span>상태</span>
                         <span th:text = "${rackStatusInfo != null ? rackStatusInfo.mbmsStatus : '-'}"></span>
@@ -212,7 +206,7 @@
                                 <th>알람 유무</th>
                             </tr>
                         </thead>
-                        <tbody id="moduleFragment" th:fragment="moduleFragment" th:if="${essInfo != null}">
+                        <tbody id="moduleTableBody" th:if="${essInfo != null}">
                             <tr th:each="module : ${moduleInfo}" th:onclick="|openCellModal(${essInfo.essId}, ${module.moduleId})|">
                                 <td th:text="${module.moduleId != null ? module.moduleId : '-'}"></td>
                                 <td th:text="${!#strings.isEmpty(module.batteryModuleStatus) ? module.batteryModuleStatus : '-'}"></td>
@@ -226,7 +220,7 @@
                                 </td>
                             </tr>
 
-                            <tr th:if="${moduleSize < 6}" th:each = "i : ${#numbers.sequence(1, 6 - moduleSize)}">
+                            <tr th:if="${sizeMap.get('moduleSize') < 6}" th:each = "i : ${#numbers.sequence(1, 6 - sizeMap.get('moduleSize'))}">
                                 <td colspan = "7">-</td>
                             </tr>
                         </tbody>
@@ -304,37 +298,30 @@
                 <span class="close" onclick="closeCellModal()">&times;</span>
             </div>
             <div class="modal-body" id="cellModalBody">
+                <div class="cellModalContent">
+                    <div class="cell-modal-scroll">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>모듈 번호</th>
+                                <th>셀 번호</th>
+                                <th>전압</th>
+                            </tr>
+                            </thead>
+                            <tbody id="cellTableBody">
+<!--                                <tr th:each="cell : ${cellInfo}">-->
+<!--                                    <td th:text="${cell.moduleId != null ? cell.moduleId : '-'}"></td>-->
+<!--                                    <td th:text="${cell.cellId != null ? cell.cellId : '-'}"></td>-->
+<!--                                    <td th:text="${cell.voltage != null ? cell.voltage : '-'}"></td>-->
+<!--                                </tr>-->
+<!--                                <tr th:if="${sizeMap.get('cellSize') < 6}" th:each="i : ${#numbers.sequence(1, 6 - sizeMap.get('cellSize'))}">-->
+<!--                                    <td colspan="3">-</td>-->
+<!--                                </tr>-->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-
-
-    <div th:fragment="cellModalContent" class="cellModalContent">
-        <div class="cell-modal-scroll">
-            <table>
-                <thead>
-                    <tr>
-                        <th>모듈 번호</th>
-                        <th>셀 번호</th>
-                        <th>전압</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="cell : ${cellInfo}">
-                        <td th:text="${cell.moduleId != null ? cell.moduleId : '-'}"></td>
-                        <td th:text="${cell.cellId != null ? cell.cellId : '-'}"></td>
-                        <td th:text="${cell.voltage != null ? cell.voltage : '-'}"></td>
-                    </tr>
-                    <tr th:if="${cellSize < 6}" th:each="i : ${#numbers.sequence(1, 6 - cellSize)}">
-                        <td colspan="3">-</td>
-                    </tr>
-
-
-                    <tr th:if="${cellSize < 6}" th:each="i : ${#numbers.sequence(1, 6 - sizeMap.of('event'))}">
-                        <td colspan="3">-</td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
