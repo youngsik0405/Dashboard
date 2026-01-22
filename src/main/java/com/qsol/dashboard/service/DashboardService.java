@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -31,14 +30,19 @@ public class DashboardService {
     // 대시보드에 필요한 모든 데이터
     public Map<String, Object> getDashboardData(Integer essId) {
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("essInfo", getEssInfo(essId));
-        result.put("rackStatusInfo", getRackStatusInfo(essId));
-        result.put("fireStatusInfo", getFireStatusInfo(essId));
-        result.put("moduleInfo", getModuleInfo(essId));
-        result.put("eventHistory", getEventHistory(essId));
+        Map<String, Integer> sizeMap = new HashMap<>();
+        sizeMap.put("eventHistorySize", getEventHistory(essId) == null ? 0 : getEventHistory(essId).size());
+        sizeMap.put("moduleSize", getModuleInfo(essId) == null ? 0 : getModuleInfo(essId).size());
 
-        return result;
+        Map<String, Object> dashboardData = new HashMap<>();
+        dashboardData.put("essInfo", getEssInfo(essId));
+        dashboardData.put("rackStatusInfo", getRackStatusInfo(essId));
+        dashboardData.put("fireStatusInfo", getFireStatusInfo(essId));
+        dashboardData.put("moduleInfo", getModuleInfo(essId));
+        dashboardData.put("eventHistory", getEventHistory(essId));
+        dashboardData.put("sizeMap", sizeMap);
+
+        return dashboardData;
     }
 
     // Ess 정보
@@ -46,13 +50,7 @@ public class DashboardService {
 
         try {
            EssMaster essMaster = essMasterRepository.findByIdWithJoin(essId);
-
-            if (essMaster == null) {
-                return null;
-            }
-
-            return EssInfoDto.from(essMaster);
-
+           return essMaster == null ? null : EssInfoDto.from(essMaster);
         } catch (Exception e) {
             log.error("EssInfo 조회 실패 essId={}", essId, e);
             return null;
@@ -63,13 +61,7 @@ public class DashboardService {
     public RackStatusDto getRackStatusInfo(Integer essId) {
         try {
             RackStatusRecent rackStatusRecent = rackStatusRecentRepository.findByEssId(essId);
-
-            if  (rackStatusRecent == null) {
-                return null;
-            }
-
-            return RackStatusDto.from(rackStatusRecent);
-
+            return rackStatusRecent == null ? null : RackStatusDto.from(rackStatusRecent);
         } catch (Exception e) {
             log.error("RackStatusInfo 조회 실패 essId={}", essId, e);
             return null;
@@ -79,12 +71,7 @@ public class DashboardService {
     public FireStatusDto getFireStatusInfo(Integer essId) {
         try {
             FireStatusRecent fireStatusRecent = fireStatusRecentRepository.findByEssId(essId);
-
-            if (fireStatusRecent == null) {
-                return null;
-            }
-
-            return FireStatusDto.from(fireStatusRecent);
+            return fireStatusRecent == null ? null : FireStatusDto.from(fireStatusRecent);
         } catch (Exception e) {
             log.error("FireStatusInfo 조회 실패 essId={}", essId, e);
             return null;
@@ -94,31 +81,33 @@ public class DashboardService {
 
     public List<EventHistoryDto> getEventHistory(Integer essId) {
         try {
-            return eventHistoryRepository.findTop9ByEssIdOrderByEventDtDesc(essId).stream().map(EventHistoryDto::from).toList();
+            List<EventHistoryDto> eventHistoryList = eventHistoryRepository.findTop9ByEssIdOrderByEventDtDesc(essId).stream().map(EventHistoryDto::from).toList();
+            return eventHistoryList.isEmpty() ? null : eventHistoryList;
         } catch (Exception e) {
             log.error("EventHistory 조회 실패 essId={}", essId, e);
-            return List.of();
+            return null;
         }
     }
 
 
     public List<EssModuleStatusDto> getModuleInfo(Integer essId) {
         try {
-//            System.out.println(essModuleStatusRecentRepository.findByEssIdWithRack(essId).stream().map(EssModuleStatusDto::from).toList());
-            return essModuleStatusRecentRepository.findByEssIdWithRack(essId).stream().map(EssModuleStatusDto::from).toList();
+            List<EssModuleStatusDto> essModuleStatusList = essModuleStatusRecentRepository.findByEssIdWithRack(essId).stream().map(EssModuleStatusDto::from).toList();
+            return essModuleStatusList.isEmpty() ? null : essModuleStatusList;
         } catch (Exception e) {
             log.error("ModuleInfo 조회 실패 essId={}", essId, e);
-            return List.of();
+            return null;
         }
     }
 
 
     public List<EssCellStatusDto> getCellInfo(Integer essId, Integer moduleId) {
         try {
-            return essCellStatusRecentRepository.findByEssIdAndModuleIdOrderByCellIdAsc(essId, moduleId).stream().map(EssCellStatusDto::from).toList();
+            List<EssCellStatusDto> essCellStatusList = essCellStatusRecentRepository.findByEssIdAndModuleIdOrderByCellIdAsc(essId, moduleId).stream().map(EssCellStatusDto::from).toList();
+            return essCellStatusList.isEmpty() ? null : essCellStatusList;
         } catch (Exception e) {
             log.error("CellInfo 조회 실패 essId={}, moduleId={}", essId, moduleId, e);
-            return List.of();
+            return null;
         }
     }
 
@@ -134,7 +123,7 @@ public class DashboardService {
             rackStatus.setHasAlarm(Math.random() > 0.6); // 40% 확률 알람
         }
         if (fireStaus != null) {
-            fireStaus.setFireStatus(Math.random() > 0.6 ? 1 : 0); // 20% 확률 화재
+            fireStaus.setFireStatus(Math.random() > 0.6 ? 1 : 0); // 40% 확률 화재
         }
 
         // Module 테스트 데이터

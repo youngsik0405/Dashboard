@@ -1,10 +1,6 @@
 package com.qsol.dashboard.controller;
 
 import com.qsol.dashboard.dto.EssCellStatusDto;
-import com.qsol.dashboard.dto.EssModuleStatusDto;
-import com.qsol.dashboard.dto.EventHistoryDto;
-import com.qsol.dashboard.dto.RackStatusDto;
-import com.qsol.dashboard.entity.EventHistory;
 import com.qsol.dashboard.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -34,41 +30,27 @@ public class DashboardController {
 
         Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
 
-        Map<String, Integer> sizeMap = new HashMap<>();
-        sizeMap.put("eventHistorySize", dashboardData.get("eventHistory") == null ? 0 : ((List<?>) dashboardData.get("eventHistory")).size());
-        sizeMap.put("moduleSize", dashboardData.get("moduleInfo") == null ? 0 : ((List<?>) dashboardData.get("moduleInfo")).size());
-        sizeMap.put("cellSize", 0);
-
-
         model.addAttribute("essInfo", dashboardData.get("essInfo"));
         model.addAttribute("rackStatusInfo", dashboardData.get("rackStatusInfo"));
         model.addAttribute("fireStatusInfo", dashboardData.get("fireStatusInfo"));
         model.addAttribute("moduleInfo", dashboardData.get("moduleInfo"));
         model.addAttribute("eventHistory", dashboardData.get("eventHistory"));
-        model.addAttribute("sizeMap", sizeMap);
-
+        model.addAttribute("size", dashboardData.get("sizeMap"));
 
         return "main";
     }
 
+    // 대시보드 업데이트 api
     @GetMapping("/api/updateDashboard")
     @ResponseBody
     public Map<String, Object> getUpdateDashboard(@RequestParam Integer essId){
         Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
-
         dashboardService.testData(dashboardData);
-
-        Map<String, Integer> sizeMap = new HashMap<>();
-
-        sizeMap.put("eventHistorySize", dashboardData.get("eventHistory") == null ? 0 : ((List<?>) dashboardData.get("eventHistory")).size());
-        sizeMap.put("moduleSize", dashboardData.get("moduleInfo") == null ? 0 : ((List<?>) dashboardData.get("moduleInfo")).size());
-        sizeMap.put("cellSize", 0);
-
-        dashboardData.put("sizeMap", sizeMap);
-
+        dashboardData.put("size", dashboardData.get("sizeMap"));
         return dashboardData;
     }
 
+    // 모달 api
     @GetMapping("/api/cellModal")
     @ResponseBody
     public Map<String, Object> getCellModal(@RequestParam Integer essId, @RequestParam Integer moduleId) {
@@ -83,12 +65,9 @@ public class DashboardController {
             }
         }
 
-        Map<String, Integer> sizeMap = new HashMap<>();
-        sizeMap.put("cellSize", cellInfo == null ? 0 : cellInfo.size());
-
         Map<String, Object> cellInfoData = new HashMap<>();
         cellInfoData.put("cellInfo", cellInfo);
-        cellInfoData.put("sizeMap", sizeMap);
+        cellInfoData.put("size", cellInfo == null ? 0 : cellInfo.size());
 
         return cellInfoData;
     }

@@ -397,7 +397,7 @@ td {
     font-size: 14px;
 }
 
-.module-data-table tr:hover {
+.module-data-table tbody tr:hover {
     background-color: #D6F5D6;
     cursor: pointer;
 }
@@ -632,11 +632,11 @@ td {
     overflow: hidden;
 }
 
-.cell-modal-scroll {
-    max-height: 272px;
-    overflow-y: auto;
-    border-radius: 12px;
-}
+/*.cell-modal-scroll {*/
+/*    max-height: 272px;*/
+/*    overflow-y: auto;*/
+/*    border-radius: 12px;*/
+/*}*/
 
 .modal-body table {
     width: 100%;

@@ -110,7 +110,7 @@
                                 <td th:text = "${event.eventDesc != null ? event.eventDesc : '-'}"></td>
                             </tr>
 
-                            <tr th:if = "${sizeMap.get('eventHistorySize') < 9}" th:each = "i : ${#numbers.sequence(1, 9 - sizeMap.get('eventHistorySize'))}">
+                            <tr th:if = "${size.get('eventHistorySize') < 9}" th:each = "i : ${#numbers.sequence(1, 9 - size.get('eventHistorySize'))}">
                                 <td colspan = "3">-</td>
                             </tr>
                         </tbody>
@@ -220,7 +220,7 @@
                                 </td>
                             </tr>
 
-                            <tr th:if="${sizeMap.get('moduleSize') < 6}" th:each = "i : ${#numbers.sequence(1, 6 - sizeMap.get('moduleSize'))}">
+                            <tr th:if="${size.get('moduleSize') < 6}" th:each = "i : ${#numbers.sequence(1, 6 - size.get('moduleSize'))}">
                                 <td colspan = "7">-</td>
                             </tr>
                         </tbody>
@@ -309,14 +309,7 @@
                             </tr>
                             </thead>
                             <tbody id="cellTableBody">
-<!--                                <tr th:each="cell : ${cellInfo}">-->
-<!--                                    <td th:text="${cell.moduleId != null ? cell.moduleId : '-'}"></td>-->
-<!--                                    <td th:text="${cell.cellId != null ? cell.cellId : '-'}"></td>-->
-<!--                                    <td th:text="${cell.voltage != null ? cell.voltage : '-'}"></td>-->
-<!--                                </tr>-->
-<!--                                <tr th:if="${sizeMap.get('cellSize') < 6}" th:each="i : ${#numbers.sequence(1, 6 - sizeMap.get('cellSize'))}">-->
-<!--                                    <td colspan="3">-</td>-->
-<!--                                </tr>-->
+
                             </tbody>
                         </table>
                     </div>
