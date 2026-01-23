@@ -104,10 +104,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each = "event, status : ${eventHistory}">
-                                <td th:text = "${status.count}"></td>
-                                <td th:text = "${event.eventDt != null ? #temporals.format(event.eventDt, 'yyyy-MM-dd HH:mm:ss') : '-'}"></td>
-                                <td th:text = "${event.eventDesc != null ? event.eventDesc : '-'}"></td>
+                            <tr id="trPopover" th:each = "event, status : ${eventHistory}" onclick="showDetail(this)">
+                                <td class="count" th:text = "${status.count}"></td>
+                                <td class="event-dt" th:text = "${event.eventDt != null ? #temporals.format(event.eventDt, 'yyyy-MM-dd HH:mm:ss') : '-'}"></td>
+                                <td class="event-desc" th:text = "${event.eventDesc != null ? event.eventDesc : '-'}"></td>
                             </tr>
 
                             <tr th:if = "${size.get('eventHistorySize') < 9}" th:each = "i : ${#numbers.sequence(1, 9 - size.get('eventHistorySize'))}">
@@ -117,6 +117,23 @@
                     </table>
                 </div>
 
+                <div id="popover" popover anchor="trPopover">
+                    <div class="popover-content">
+                        <h4>이벤트상세</h4>
+                        <p><strong>발생시간:</strong><span id="eventDt">-</span></p>
+                        <p><strong>발생내용:</strong><span id="eventDesc">-</span></p>
+<!--                        <table class="popover-table">-->
+<!--                            <tr>-->
+<!--                                <th>발생시간</th>-->
+<!--                                <td>-</td>-->
+<!--                            </tr>-->
+<!--                            <tr>-->
+<!--                                <th>발생내용</th>-->
+<!--                                <td>-</td>-->
+<!--                            </tr>-->
+<!--                        </table>-->
+                    </div>
+                </div>
 
                 <div class="tab-content event_2" id="dischargeContent">
                     <table>
@@ -162,23 +179,23 @@
                 <div class="status">
                     <div>
                         <span>상태</span>
-                        <span th:text = "${rackStatusInfo != null ? rackStatusInfo.mbmsStatus : '-'}"></span>
+                        <span class="mbms-status" th:text = "${rackStatusInfo != null ? rackStatusInfo.mbmsStatus : '-'}"></span>
                     </div>
                     <div>
                         <span>충전량</span>
-                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackSoc != null ? rackStatusInfo.rackSoc + '%' : '-'}"></span>
+                        <span class="rack-soc" th:text = "${rackStatusInfo != null and rackStatusInfo.rackSoc != null ? rackStatusInfo.rackSoc + '%' : '-'}"></span>
                     </div>
                     <div>
                         <span>전압</span>
-                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackDcVoltage != null ? rackStatusInfo.rackDcVoltage + 'V' : '-'}"></span>
+                        <span class="rack-dc-voltage" th:text = "${rackStatusInfo != null and rackStatusInfo.rackDcVoltage != null ? rackStatusInfo.rackDcVoltage + 'V' : '-'}"></span>
                     </div>
                     <div>
                         <span>온도</span>
-                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackTemperature != null ? rackStatusInfo.rackTemperature + '˚C' : '-'}"></span>
+                        <span class="rack-temperature" th:text = "${rackStatusInfo != null and rackStatusInfo.rackTemperature != null ? rackStatusInfo.rackTemperature + '˚C' : '-'}"></span>
                     </div>
                     <div>
                         <span>전류</span>
-                        <span th:text = "${rackStatusInfo != null and rackStatusInfo.rackCurrent != null ? rackStatusInfo.rackCurrent + 'A' : '-'}"></span>
+                        <span class="rack-current" th:text = "${rackStatusInfo != null and rackStatusInfo.rackCurrent != null ? rackStatusInfo.rackCurrent + 'A' : '-'}"></span>
                     </div>
                     <div>
                         <span>알람 유무</span>
@@ -208,13 +225,13 @@
                         </thead>
                         <tbody id="moduleTableBody" th:if="${essInfo != null}">
                             <tr th:each="module : ${moduleInfo}" th:onclick="|openCellModal(${essInfo.essId}, ${module.moduleId})|">
-                                <td th:text="${module.moduleId != null ? module.moduleId : '-'}"></td>
-                                <td th:text="${!#strings.isEmpty(module.batteryModuleStatus) ? module.batteryModuleStatus : '-'}"></td>
-                                <td th:text="${module.moduleDcVoltage != null ? module.moduleDcVoltage : '-'}"></td>
-                                <td th:text="${module.maxCellVoltage != null ? module.maxCellVoltage : '-'}"></td>
-                                <td th:text="${module.minCellVoltage != null ? module.minCellVoltage : '-'}"></td>
-                                <td th:text="${module.avgModuleTemperature != null ? module.avgModuleTemperature : '-'}"></td>
-                                <td>
+                                <td class="module_id" th:text="${module.moduleId != null ? module.moduleId : '-'}"></td>
+                                <td class="battery_module_status" th:text="${!#strings.isEmpty(module.batteryModuleStatus) ? module.batteryModuleStatus : '-'}"></td>
+                                <td class="module_dc_voltage" th:text="${module.moduleDcVoltage != null ? module.moduleDcVoltage : '-'}"></td>
+                                <td class="max_cell_voltage" th:text="${module.maxCellVoltage != null ? module.maxCellVoltage : '-'}"></td>
+                                <td class="min_cell_voltage" th:text="${module.minCellVoltage != null ? module.minCellVoltage : '-'}"></td>
+                                <td class="avg_module_temperature" th:text="${module.avgModuleTemperature != null ? module.avgModuleTemperature : '-'}"></td>
+                                <td class="alarm_icon">
                                     <i class="fa-solid fa-triangle-exclamation" th:if="${module.hasAlarm == true}"></i>
                                     <span th:if="${module.hasAlarm != true}">-</span>
                                 </td>

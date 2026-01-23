@@ -211,6 +211,11 @@ td {
     white-space: nowrap;
 }
 
+.tab-content tr:hover {
+    background-color: #D6F5D6;
+    cursor: pointer;
+}
+
 #eventContent th:nth-child(1), #eventContent td:nth-child(1) {
     width: 50px;
 }
@@ -669,4 +674,12 @@ td {
 
 .modal-body table tbody tr:last-child td {
     border-bottom: none;
+}
+
+/*====================================================================================================================*/
+
+#popover {
+    position: absolute;
+    padding: 10px;
+    border: 1px solid #C6C6C6;
 }
