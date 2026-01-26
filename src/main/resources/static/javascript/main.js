@@ -359,3 +359,156 @@ function showDetail(row) {
     popover.showPopover();
 }
 
+
+Highcharts.setOptions({
+    time: {
+        useUTC: false
+    }
+});
+
+Highcharts.chart('chart', {
+    chart: {
+        type: 'line',
+        zoomType: 'xy'
+    },
+    title: {
+        text: 'Rack 그래프',
+        margin: 30,
+        style: {
+            fontSize: '24px',
+        }
+    },
+    subtitle: {
+        text: Highcharts.dateFormat('%Y-%m-%d', Date.now()),
+        align: 'right',
+        style: {
+            fontSize: '18px'
+        },
+        y: 20
+    },
+
+    xAxis: {
+        type: 'datetime',
+        min: Date.now() - (6 * 60 * 60 * 1000),
+        max: Date.now(),
+        tickInterval: 30 * 60 * 1000,
+        labels: {
+            format: '{value:%H:%M}'
+        }
+    },
+    yAxis: [{
+        title: {
+            text: ''
+        },
+        labels: {
+            style: {
+                color: '#2caffe'
+            },
+            format: '{value} V'
+        },
+        tickInterval: 10,
+        tickAmount: 4,
+        min: 0
+    }, {
+        title: {
+            text: ''
+        },
+        labels: {
+            style: {
+                color: '#544fc5'
+            },
+            format: '{value} A'
+        },
+        opposite: true,
+        tickInterval: 15,
+        tickAmount: 4,
+        min: 0
+    }, {
+        title: {
+            text: ''
+        },
+        labels: {
+            style: {
+                color: '#5BD75B'
+            },
+            format: '{value} ˚C'
+        },
+        opposite: true,
+        tickInterval: 15,
+        tickAmount: 4,
+        min: 0
+    }],
+    tooltip: {
+        xDateFormat:'%H:%M:%S',
+        pointFormat: '{point.y}'
+    },
+    series: [{
+        name: '전압(V)',
+        data: [
+            [Date.now() - (6 * 60 * 60 * 1000), 10],
+            [Date.now() - (5.5 * 60 * 60 * 1000), 15],
+            [Date.now() - (5 * 60 * 60 * 1000), 8],
+            [Date.now() - (4.5 * 60 * 60 * 1000), 20],
+            [Date.now() - (4 * 60 * 60 * 1000), 30],
+            [Date.now() - (3.5 * 60 * 60 * 1000), 45],
+            [Date.now() - (3 * 60 * 60 * 1000), 50],
+            [Date.now() - (2.5 * 60 * 60 * 1000), 55],
+            [Date.now() - (2 * 60 * 60 * 1000), 51],
+            [Date.now() - (1.5 * 60 * 60 * 1000), 52],
+            [Date.now() - (1 * 60 * 60 * 1000), 33],
+            [Date.now() - (0.5 * 60 * 60 * 1000), 32],
+            [Date.now(), 33]],
+        yAxis: 0
+    }, {
+        name: '전류(A)',
+        data: [
+            [Date.now() - (6 * 60 * 60 * 1000), 20],
+            [Date.now() - (5.5 * 60 * 60 * 1000), 15],
+            [Date.now() - (5 * 60 * 60 * 1000), 11],
+            [Date.now() - (4.5 * 60 * 60 * 1000), 20],
+            [Date.now() - (4 * 60 * 60 * 1000), 40],
+            [Date.now() - (3.5 * 60 * 60 * 1000), 45],
+            [Date.now() - (3 * 60 * 60 * 1000), 20],
+            [Date.now() - (2.5 * 60 * 60 * 1000), 15],
+            [Date.now() - (2 * 60 * 60 * 1000), 11],
+            [Date.now() - (1.5 * 60 * 60 * 1000), 12],
+            [Date.now() - (1 * 60 * 60 * 1000), 23],
+            [Date.now() - (0.5 * 60 * 60 * 1000), 32],
+            [Date.now(), 31]],
+        yAxis: 1
+    }, {
+        name: '온도(˚C)',
+        data: [
+            [Date.now() - (6 * 60 * 60 * 1000), 11],
+            [Date.now() - (5.5 * 60 * 60 * 1000), 12],
+            [Date.now() - (5 * 60 * 60 * 1000), 13],
+            [Date.now() - (4.5 * 60 * 60 * 1000), 14],
+            [Date.now() - (4 * 60 * 60 * 1000), 15],
+            [Date.now() - (3.5 * 60 * 60 * 1000), 16],
+            [Date.now() - (3 * 60 * 60 * 1000), 17],
+            [Date.now() - (2.5 * 60 * 60 * 1000), 18],
+            [Date.now() - (2 * 60 * 60 * 1000), 19],
+            [Date.now() - (1.5 * 60 * 60 * 1000), 20],
+            [Date.now() - (1 * 60 * 60 * 1000), 21],
+            [Date.now() - (0.5 * 60 * 60 * 1000), 22],
+            [Date.now(), 23]],
+        yAxis: 2
+    }],
+    credits: {
+        enabled: false
+    }
+});
+
+function chart(essId) {
+    axios.get("/api/chart", {
+        params: { essId }
+    }).then(response => {
+        const data = response.data;
+
+        const categories = data.map(d => d.createdAt);
+    })
+}
+
+
+
+

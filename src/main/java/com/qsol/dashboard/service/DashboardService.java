@@ -25,6 +25,7 @@ public class DashboardService {
     private final EssModuleStatusRecentRepository essModuleStatusRecentRepository;
     private final EssCellStatusRecentRepository essCellStatusRecentRepository;
     private final EssMasterRepository essMasterRepository;
+    private final EssRackStatusMinuteRepository essRackStatusMinuteRepository;
 
 
     // 대시보드에 필요한 모든 데이터
@@ -107,6 +108,16 @@ public class DashboardService {
             return essCellStatusList.isEmpty() ? null : essCellStatusList;
         } catch (Exception e) {
             log.error("CellInfo 조회 실패 essId={}, moduleId={}", essId, moduleId, e);
+            return null;
+        }
+    }
+
+    public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(Integer essId) {
+        try {
+            List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssId(essId).stream().map(EssRackStatusMinuteDto::from).toList();
+            return essRackStatusMinuteList.isEmpty() ? null : essRackStatusMinuteList;
+        } catch (Exception e) {
+            log.error("EssRackStatusMinuteData 조회 실패 essId={}", essId, e);
             return null;
         }
     }

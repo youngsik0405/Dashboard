@@ -1,6 +1,7 @@
 package com.qsol.dashboard.controller;
 
 import com.qsol.dashboard.dto.EssCellStatusDto;
+import com.qsol.dashboard.dto.EssRackStatusMinuteDto;
 import com.qsol.dashboard.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -45,7 +46,7 @@ public class DashboardController {
     @ResponseBody
     public Map<String, Object> getUpdateDashboard(@RequestParam Integer essId){
         Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
-        dashboardService.testData(dashboardData);
+//        dashboardService.testData(dashboardData);
         dashboardData.put("size", dashboardData.get("sizeMap"));
         return dashboardData;
     }
@@ -57,18 +58,23 @@ public class DashboardController {
         // 데이터 조회
         List<EssCellStatusDto> cellInfo = dashboardService.getCellInfo(essId, moduleId);
 
-        // 테스트 용
-        if (cellInfo != null) {
-            for (EssCellStatusDto cell : cellInfo) {
-                double randomVolt = 3.2 + (Math.random() * 0.4);
-                cell.setVoltage(BigDecimal.valueOf(Math.round(randomVolt * 100) / 100.0));
-            }
-        }
+//        // 테스트 용
+//        if (cellInfo != null) {
+//            for (EssCellStatusDto cell : cellInfo) {
+//                double randomVolt = 3.2 + (Math.random() * 0.4);
+//                cell.setVoltage(BigDecimal.valueOf(Math.round(randomVolt * 100) / 100.0));
+//            }
+//        }
 
         Map<String, Object> cellInfoData = new HashMap<>();
         cellInfoData.put("cellInfo", cellInfo);
         cellInfoData.put("size", cellInfo == null ? 0 : cellInfo.size());
 
         return cellInfoData;
+    }
+
+    @GetMapping("/api/chart")
+    public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(Integer essId) {
+        return dashboardService.getEssRackStatusMinuteData(essId);
     }
 }
