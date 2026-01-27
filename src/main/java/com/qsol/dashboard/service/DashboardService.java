@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -90,6 +91,12 @@ public class DashboardService {
         }
     }
 
+    public EventHistoryDto getEventDetail(Integer essId, Integer eventId) {
+        try {
+            EventHistory eventHistory = eventHistoryRepository.findTop9ByEssIdOrderByEventDtDesc();
+        }
+    }
+
 
     public List<EssModuleStatusDto> getModuleInfo(Integer essId) {
         try {
@@ -112,9 +119,11 @@ public class DashboardService {
         }
     }
 
-    public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(Integer essId) {
+    public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(Integer essId, Integer rackDeviceId) {
         try {
-            List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssId(essId).stream().map(EssRackStatusMinuteDto::from).toList();
+            // 현재 시점을 기준으로 6시간 전
+            LocalDateTime sixHoursAgo = LocalDateTime.now().minusHours(6);
+            List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, sixHoursAgo).stream().map(EssRackStatusMinuteDto::from).toList();
             return essRackStatusMinuteList.isEmpty() ? null : essRackStatusMinuteList;
         } catch (Exception e) {
             log.error("EssRackStatusMinuteData 조회 실패 essId={}", essId, e);

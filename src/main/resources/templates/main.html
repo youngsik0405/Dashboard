@@ -8,10 +8,11 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/header.css}">
     <link rel="stylesheet" th:href="@{/css/footer.css}">
-    <script th:src="@{/javascript/main.js}" defer></script>
     <script src="https://kit.fontawesome.com/16a62b2266.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js" defer></script>
+    <script src="https://code.highcharts.com/modules/no-data-to-display.js" defer></script>
+    <script th:src="@{/javascript/main.js}" defer></script>
 </head>
 <body>
     <header>
@@ -105,7 +106,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr id="trPopover" th:each = "event, status : ${eventHistory}" onclick="showDetail(this)">
+                            <tr id="trPopover" th:each = "event, status : ${eventHistory}" th:onclick="|showDetail(${event.id})|">
                                 <td class="count" th:text = "${status.count}"></td>
                                 <td class="event-dt" th:text = "${event.eventDt != null ? #temporals.format(event.eventDt, 'yyyy-MM-dd HH:mm:ss') : '-'}"></td>
                                 <td class="event-desc" th:text = "${event.eventDesc != null ? event.eventDesc : '-'}"></td>
@@ -120,9 +121,9 @@
 
                 <div id="popover" popover anchor="trPopover">
                     <div class="popover-content">
-                        <h4>이벤트상세</h4>
+                        <p><strong>이벤트 종류: </strong><span id="eventType">-</span></p>
                         <p><strong>발생시간: </strong><span id="eventDt">-</span></p>
-                        <p><strong>발생내용: </strong><span id="eventDesc">-</span></p>
+                        <p><strong>이벤트 상세: </strong><span id="eventDetail">-</span></p>
 <!--                        <table class="popover-table">-->
 <!--                            <tr>-->
 <!--                                <th>발생시간</th>-->
@@ -255,7 +256,7 @@
 
             <!--차트-->
             <div class="chart-container">
-                <a href="http://localhost:8080">일일 데이터 조회</a>
+                <a href="">일일 데이터 조회</a>
                 <div class="chart" id="chart">
                 </div>
             </div>

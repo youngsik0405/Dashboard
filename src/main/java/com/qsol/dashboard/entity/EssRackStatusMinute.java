@@ -33,7 +33,7 @@ public class EssRackStatusMinute {
     @Column(name = "rack_current")
     private BigDecimal rackCurrent;
 
-    @Column(name = "rack_temperacture")
+    @Column(name = "rack_temperature")
     private BigDecimal rackTemperature;
 
     @Column(name = "created_at")

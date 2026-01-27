@@ -46,7 +46,7 @@ public class DashboardController {
     @ResponseBody
     public Map<String, Object> getUpdateDashboard(@RequestParam Integer essId){
         Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
-//        dashboardService.testData(dashboardData);
+        dashboardService.testData(dashboardData);
         dashboardData.put("size", dashboardData.get("sizeMap"));
         return dashboardData;
     }
@@ -74,7 +74,8 @@ public class DashboardController {
     }
 
     @GetMapping("/api/chart")
-    public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(Integer essId) {
-        return dashboardService.getEssRackStatusMinuteData(essId);
+    @ResponseBody
+    public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
+        return dashboardService.getEssRackStatusMinuteData(essId, rackDeviceId);
     }
 }

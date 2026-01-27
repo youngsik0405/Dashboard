@@ -365,6 +365,14 @@ td {
     align-content: center;
 }
 
+.status div.alarm-background-active {
+    background-color: #FF6A33 !important;
+}
+
+.status div.fire-background-active {
+    background-color: #FF6A33 !important;
+}
+
 .status div i.alarm-active {
     color: #FF6A33;
 }

@@ -2,6 +2,12 @@ let previousEventHistory = null; // 이전 데이터와 현재 데이터 비교�
 
 // DOM 로드 완료 후 실행
 document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(location.search);
+    const essId = params.get("essId") ? params.get("essId") : 7;
+    const rackDeviceId = params.get("rackDeviceId") ? params.get("rackDeviceId") : 1;
+
+    loadChart(essId, rackDeviceId);
+
     // 주기적 업데이트 (5초마다)
     setInterval(updateDashboard, 5000);
 })
@@ -111,10 +117,18 @@ function updateRackStatus (rackStatusInfo) {
     }
 
     if (alarmIcon) {
+        const alarmBox = alarmIcon.closest('.status div');
+
         if (rackStatusInfo != null && rackStatusInfo.hasAlarm === true) {
             alarmIcon.classList.add('alarm-active');
+            if (alarmBox) {
+                alarmBox.classList.add('alarm-background-active');
+            }
         } else {
             alarmIcon.classList.remove('alarm-active');
+            if (alarmBox) {
+                alarmBox.classList.remove('alarm-background-active');
+            }
         }
     }
 
@@ -126,10 +140,18 @@ function updateFireStatus(fireStatusInfo) {
     const fire = document.querySelector('.fa-fire');
 
     if (fire) {
+        const fireBox = fire.closest('.status div');
+
         if (fireStatusInfo != null && fireStatusInfo.fireStatus === 1) {
             fire.classList.add('fire-active');
+            if (fireBox) {
+                fireBox.classList.add('fire-background-active');
+            }
         } else {
             fire.classList.remove('fire-active');
+            if (fireBox) {
+                fireBox.classList.remove('fire-background-active');
+            }
         }
     }
 }
@@ -330,185 +352,212 @@ function formatData(eventDt) {
    return dateFormat;
 }
 
+// 이벤트 상세
+function showDetail(eventId) {
+    const params = new URLSearchParams(location.search).get("essId");
+    const essId = params ? params : 7;
 
-function showDetail(row) {
-    const popover = document.getElementById("popover");
-    let eventHistoryDt;
-    let eventHistoryDesc;
-
-    if (row.querySelector('.event-dt')) {
-        eventHistoryDt = row.querySelector('.event-dt').textContent;
-    } else {
-        eventHistoryDt = '-';
-    }
-
-    if (row.querySelector('.event-desc')) {
-        eventHistoryDesc = row.querySelector('.event-desc').textContent;
-    } else {
-        eventHistoryDesc = '-';
-    }
-
-    document.getElementById('eventDt').textContent = eventHistoryDt;
-    document.getElementById('eventDesc').textContent = eventHistoryDesc;
-
-    const rect = row.getBoundingClientRect();
-
-    popover.style.top = `${rect.top - (rect.height/2)}px`;
-    popover.style.left = `${rect.right + 10}px`;
-
-    popover.showPopover();
-}
-
-
-Highcharts.setOptions({
-    time: {
-        useUTC: false
-    }
-});
-
-Highcharts.chart('chart', {
-    chart: {
-        type: 'line',
-        zoomType: 'xy'
-    },
-    title: {
-        text: 'Rack 그래프',
-        margin: 30,
-        style: {
-            fontSize: '24px',
+    axios.get("/api/eventDetail", {
+        params: {
+            essId: essId,
+            eventId: eventId
         }
-    },
-    subtitle: {
-        text: Highcharts.dateFormat('%Y-%m-%d', Date.now()),
-        align: 'right',
-        style: {
-            fontSize: '18px'
-        },
-        y: 20
-    },
-
-    xAxis: {
-        type: 'datetime',
-        min: Date.now() - (6 * 60 * 60 * 1000),
-        max: Date.now(),
-        tickInterval: 30 * 60 * 1000,
-        labels: {
-            format: '{value:%H:%M}'
-        }
-    },
-    yAxis: [{
-        title: {
-            text: ''
-        },
-        labels: {
-            style: {
-                color: '#2caffe'
-            },
-            format: '{value} V'
-        },
-        tickInterval: 10,
-        tickAmount: 4,
-        min: 0
-    }, {
-        title: {
-            text: ''
-        },
-        labels: {
-            style: {
-                color: '#544fc5'
-            },
-            format: '{value} A'
-        },
-        opposite: true,
-        tickInterval: 15,
-        tickAmount: 4,
-        min: 0
-    }, {
-        title: {
-            text: ''
-        },
-        labels: {
-            style: {
-                color: '#5BD75B'
-            },
-            format: '{value} ˚C'
-        },
-        opposite: true,
-        tickInterval: 15,
-        tickAmount: 4,
-        min: 0
-    }],
-    tooltip: {
-        xDateFormat:'%H:%M:%S',
-        pointFormat: '{point.y}'
-    },
-    series: [{
-        name: '전압(V)',
-        data: [
-            [Date.now() - (6 * 60 * 60 * 1000), 10],
-            [Date.now() - (5.5 * 60 * 60 * 1000), 15],
-            [Date.now() - (5 * 60 * 60 * 1000), 8],
-            [Date.now() - (4.5 * 60 * 60 * 1000), 20],
-            [Date.now() - (4 * 60 * 60 * 1000), 30],
-            [Date.now() - (3.5 * 60 * 60 * 1000), 45],
-            [Date.now() - (3 * 60 * 60 * 1000), 50],
-            [Date.now() - (2.5 * 60 * 60 * 1000), 55],
-            [Date.now() - (2 * 60 * 60 * 1000), 51],
-            [Date.now() - (1.5 * 60 * 60 * 1000), 52],
-            [Date.now() - (1 * 60 * 60 * 1000), 33],
-            [Date.now() - (0.5 * 60 * 60 * 1000), 32],
-            [Date.now(), 33]],
-        yAxis: 0
-    }, {
-        name: '전류(A)',
-        data: [
-            [Date.now() - (6 * 60 * 60 * 1000), 20],
-            [Date.now() - (5.5 * 60 * 60 * 1000), 15],
-            [Date.now() - (5 * 60 * 60 * 1000), 11],
-            [Date.now() - (4.5 * 60 * 60 * 1000), 20],
-            [Date.now() - (4 * 60 * 60 * 1000), 40],
-            [Date.now() - (3.5 * 60 * 60 * 1000), 45],
-            [Date.now() - (3 * 60 * 60 * 1000), 20],
-            [Date.now() - (2.5 * 60 * 60 * 1000), 15],
-            [Date.now() - (2 * 60 * 60 * 1000), 11],
-            [Date.now() - (1.5 * 60 * 60 * 1000), 12],
-            [Date.now() - (1 * 60 * 60 * 1000), 23],
-            [Date.now() - (0.5 * 60 * 60 * 1000), 32],
-            [Date.now(), 31]],
-        yAxis: 1
-    }, {
-        name: '온도(˚C)',
-        data: [
-            [Date.now() - (6 * 60 * 60 * 1000), 11],
-            [Date.now() - (5.5 * 60 * 60 * 1000), 12],
-            [Date.now() - (5 * 60 * 60 * 1000), 13],
-            [Date.now() - (4.5 * 60 * 60 * 1000), 14],
-            [Date.now() - (4 * 60 * 60 * 1000), 15],
-            [Date.now() - (3.5 * 60 * 60 * 1000), 16],
-            [Date.now() - (3 * 60 * 60 * 1000), 17],
-            [Date.now() - (2.5 * 60 * 60 * 1000), 18],
-            [Date.now() - (2 * 60 * 60 * 1000), 19],
-            [Date.now() - (1.5 * 60 * 60 * 1000), 20],
-            [Date.now() - (1 * 60 * 60 * 1000), 21],
-            [Date.now() - (0.5 * 60 * 60 * 1000), 22],
-            [Date.now(), 23]],
-        yAxis: 2
-    }],
-    credits: {
-        enabled: false
-    }
-});
-
-function chart(essId) {
-    axios.get("/api/chart", {
-        params: { essId }
     }).then(response => {
-        const data = response.data;
+        const popover = document.getElementById("popover");
 
-        const categories = data.map(d => d.createdAt);
-    })
+        document.getElementById('eventType').textContent = response.data.eventType || '-';
+        document.getElementById('eventDt').textContent = response.data.eventDt ? formatData(response.data.eventDt) : '-';
+        document.getElementById('eventDetail').textContent = response.data.eventDetail || '-';
+
+        const row = event.target.closet('tr');
+        const rect = row.getBoundingClientRect();
+
+        popover.style.top = `${rect.top - (rect.height/2)}px`;
+        popover.style.left = `${rect.right + 10}px`;
+
+        popover.showPopover();
+    }).catch(error => {
+        console.error('이벤트 상세 조회 실패', error);
+    });
 }
 
+
+// 차트 데이터 불러오기
+function loadChart(essId, rackDeviceId) {
+    axios.get("/api/chart", {
+        params: {
+            essId: essId,
+            rackDeviceId: rackDeviceId
+        }
+    }).then(response => {
+
+        let voltageData = [];
+        let currentData = [];
+        let temperatureData = [];
+
+        // 데이터가 있으면 변환
+        if (response.data && response.data.length > 0) {
+            // 데이터 변환: Highchart 형식 [timestamp, value]
+            voltageData = response.data.map(rackData => [
+                new Date(rackData.createdAt).getTime(), rackData.rackDcVoltage != null ? rackData.rackDcVoltage : null
+            ]);
+
+            currentData = response.data.map(rackData => [
+                new Date(rackData.createdAt).getTime(), rackData.rackCurrent != null ? rackData.rackCurrent : null
+            ]);
+
+            temperatureData = response.data.map(rackData => [
+                new Date(rackData.createdAt).getTime(), rackData.rackTemperature != null ? rackData.rackTemperature : null
+            ]);
+        }
+
+        drawGraph(voltageData, currentData, temperatureData, false);
+
+    }).catch(error => {
+        console.error('차트 데이터 조회 실패',error);
+        // 에러 시에는 빈 차트 표시
+        drawGraph([], [], [], true);
+    });
+}
+
+
+// 그래프 그리기
+function drawGraph(voltageData, currentData, temperatureData, isError) {
+    Highcharts.setOptions({
+        time: {
+            useUTC: false
+        },
+        lang: {
+            noData: isError ? '데이터를 불러오는 중 오류가 발생했습니다.' : '최근 6시간동안 수집한 데이터가 없습니다.'
+        }
+    });
+
+    const chartOptions = {
+        chart: {
+            type: 'line',
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'rack 그래프',
+            margin: 30,
+            style: {
+                fontSize: '24px'
+            }
+        },
+        subtitle: {
+            text: Highcharts.dateFormat('%Y-%m-%d', Date.now()),
+            align: 'right',
+            style: {
+                fontSize: '18px'
+            },
+            y: 20
+        },
+        xAxis: {
+            type: 'datetime',
+            min: Date.now() - (6 * 60 * 60 * 1000),
+            max: Date.now(),
+            tackInterval: 30 * 60 * 1000,
+            labels: {
+                format: '{value:%H:%M}'
+            },
+            showEmpty: false
+        },
+        yAxis: [{
+            title: {
+                text: ''
+            },
+            labels: {
+                style: {
+                    color: '#2caffe'
+                },
+                format: '{value} V'
+            },
+            tickInterval: 10,
+            tickAmount: 4,
+            min: 30,
+            max: 60,
+            showEmpty: false
+        }, {
+            title: {
+                text: ''
+            },
+            labels: {
+                style: {
+                    color: '#544fc5'
+                },
+                format: '{value} A'
+            },
+            opposite: true,
+            tickInterval: 15,
+            tickAmount: 4,
+            min: 0,
+            max: 45,
+            showEmpty: false
+        }, {
+            title: {
+                text: ''
+            },
+            labels: {
+                style: {
+                    color: '#5BD75B'
+                },
+                format: '{value} ˚C'
+            },
+            opposite: true,
+            tickInterval: 15,
+            tickAmount: 4,
+            min: 0,
+            max: 45,
+            showEmpty: false
+        }],
+        tooltip: {
+            shared: true,
+            crosshairs: true,
+            xDateFormat: '%H:%M:%S',
+            headerFormat: '<span style="font-size: 16px; font-weight: bold;">{point.key}</span><br/>',
+            pointFormat: '<span style="color:{series.color}; font-size: 20px;">{series.name} : {point.y}</span><br/>',
+            valueDecimals: 1
+        },
+        noData: {
+            position: {
+                top: 0,
+                left: 0,
+                align: 'center',
+                verticalAlign: 'middle'
+            },
+            style: {
+                fontSize: '16px',
+                fontWeight: 'bold',
+                color: isError ? '#FF6A33' : '#374151'
+            }
+        },
+        series: [{
+            name: '전압(V)',
+            data: voltageData,
+            yAxis: 0,
+            connectNulls: false,
+            showInLegend: voltageData.length > 0
+        }, {
+            name: '전류(A)',
+            data: currentData,
+            yAxis: 1,
+            connectNulls: false,
+            showInLegend: currentData.length > 0
+        }, {
+            name: '온도(˚C)',
+            data: temperatureData,
+            yAxis: 2,
+            connectNulls: false,
+            showInLegend: temperatureData.length > 0
+        }],
+        credits: {
+            enabled: false
+        }
+    }
+
+    Highcharts.chart('chart', chartOptions);
+
+}
 
 
 

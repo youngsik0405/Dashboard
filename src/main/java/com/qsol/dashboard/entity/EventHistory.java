@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "tb_event_history")
@@ -27,4 +28,8 @@ public class EventHistory {
 
     @Column(name = "event_desc")
     private String eventDesc;
+
+    @OneToMany
+    @JoinColumn(name = "event_id", referencedColumnName = "id")
+    private List<EssWarningFaultDetail> essWarningFaultDetailList;
 }
