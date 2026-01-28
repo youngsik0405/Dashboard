@@ -106,7 +106,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr id="trPopover" th:each = "event, status : ${eventHistory}" th:onclick="|showDetail(${event.id})|">
+                            <tr th:each = "event, status : ${eventHistory}" th:onclick="|showDetail(this, ${event.id})|">
                                 <td class="count" th:text = "${status.count}"></td>
                                 <td class="event-dt" th:text = "${event.eventDt != null ? #temporals.format(event.eventDt, 'yyyy-MM-dd HH:mm:ss') : '-'}"></td>
                                 <td class="event-desc" th:text = "${event.eventDesc != null ? event.eventDesc : '-'}"></td>
@@ -117,24 +117,6 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
-
-                <div id="popover" popover anchor="trPopover">
-                    <div class="popover-content">
-                        <p><strong>이벤트 종류: </strong><span id="eventType">-</span></p>
-                        <p><strong>발생시간: </strong><span id="eventDt">-</span></p>
-                        <p><strong>이벤트 상세: </strong><span id="eventDetail">-</span></p>
-<!--                        <table class="popover-table">-->
-<!--                            <tr>-->
-<!--                                <th>발생시간</th>-->
-<!--                                <td>-</td>-->
-<!--                            </tr>-->
-<!--                            <tr>-->
-<!--                                <th>발생내용</th>-->
-<!--                                <td>-</td>-->
-<!--                            </tr>-->
-<!--                        </table>-->
-                    </div>
                 </div>
 
                 <div class="tab-content event_2" id="dischargeContent">
@@ -171,6 +153,26 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="popover" id="popover" popover>
+            <div class="popover-header">
+                <span class="popover-close" onclick="closePopover()">&times;</span>
+            </div>
+            <div class="popover-content">
+                <div>
+                    <span>이벤트 종류</span>
+                    <span id="eventType"></span>
+                </div>
+                <div>
+                    <span>발생시간</span>
+                    <span id="eventDt"></span>
+                </div>
+                <div>
+                    <span>이벤트 상세</span>
+                    <span id="eventDetail"></span>
                 </div>
             </div>
         </div>

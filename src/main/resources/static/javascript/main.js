@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     loadChart(essId, rackDeviceId);
 
     // 주기적 업데이트 (5초마다)
-    setInterval(updateDashboard, 5000);
+    setInterval(updateDashboard, 1000);
 })
 
 // 데이터 갱신
@@ -353,7 +353,7 @@ function formatData(eventDt) {
 }
 
 // 이벤트 상세
-function showDetail(eventId) {
+function showDetail(row, eventId) {
     const params = new URLSearchParams(location.search).get("essId");
     const essId = params ? params : 7;
 
@@ -364,21 +364,63 @@ function showDetail(eventId) {
         }
     }).then(response => {
         const popover = document.getElementById("popover");
+        const eventType = response.data.eventType;
+        const eventDetail = response.data.eventDetail || '없음';
 
-        document.getElementById('eventType').textContent = response.data.eventType || '-';
-        document.getElementById('eventDt').textContent = response.data.eventDt ? formatData(response.data.eventDt) : '-';
-        document.getElementById('eventDetail').textContent = response.data.eventDetail || '-';
+        let eventTypeText = "";
 
-        const row = event.target.closet('tr');
+        switch (eventType) {
+            case "WARNING" :
+                eventTypeText = "배터리 주의";
+                break;
+            case "FAULT" :
+                eventTypeText = "배터리 경보";
+                break;
+            case "MODE" :
+                eventTypeText = "운전 모드";
+                break;
+            case "COMM ERROR" :
+                eventTypeText = "통신 오류";
+                break;
+            case "FIRE SIGNAL" :
+                eventTypeText = "화재";
+                break;
+            default :
+                eventTypeText = "기타";
+                break;
+        }
+
+        document.getElementById('eventType').textContent = eventTypeText;
+        document.getElementById('eventDt').textContent = response.data.eventDt ? formatData(response.data.eventDt) : '없음';
+        document.getElementById('eventDetail').textContent = eventDetail.includes('/') ? eventDetail.split('/').join('\n') : eventDetail;
+
         const rect = row.getBoundingClientRect();
+        const offsetTop = rect.top + window.scrollY;
+        const offsetLeft = rect.left + window.scrollX;
+        const offsetBottom = offsetTop + row.offsetHeight;
+        const offsetBottomTo = document.body.scrollHeight - offsetBottom + 20;
 
-        popover.style.top = `${rect.top - (rect.height/2)}px`;
-        popover.style.left = `${rect.right + 10}px`;
+        popover.style.left = (offsetLeft + 590) + "px";
+        popover.style.bottom = offsetBottomTo + "px";
+        popover.style.top = `auto`;
+
+
+        // popover.style.left = `${rect.right + 30}px`;
+        // popover.style.top = `${rect.top + (rect.height / 2)}px`;
+        // popover.style.transform = `translateY(-50%)`;
+        // popover.style.bottom = `auto`;
 
         popover.showPopover();
+
     }).catch(error => {
         console.error('이벤트 상세 조회 실패', error);
     });
+}
+
+// 팝오버 닫기
+function closePopover() {
+    const popover = document.getElementById("popover");
+    popover.hidePopover();
 }
 
 

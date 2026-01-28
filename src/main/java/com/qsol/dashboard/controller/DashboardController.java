@@ -2,7 +2,9 @@ package com.qsol.dashboard.controller;
 
 import com.qsol.dashboard.dto.EssCellStatusDto;
 import com.qsol.dashboard.dto.EssRackStatusMinuteDto;
+import com.qsol.dashboard.dto.EventHistoryDto;
 import com.qsol.dashboard.service.DashboardService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -46,7 +48,7 @@ public class DashboardController {
     @ResponseBody
     public Map<String, Object> getUpdateDashboard(@RequestParam Integer essId){
         Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
-        dashboardService.testData(dashboardData);
+//        dashboardService.testData(dashboardData);
         dashboardData.put("size", dashboardData.get("sizeMap"));
         return dashboardData;
     }
@@ -78,4 +80,11 @@ public class DashboardController {
     public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
         return dashboardService.getEssRackStatusMinuteData(essId, rackDeviceId);
     }
+
+    @GetMapping("/api/eventDetail")
+    @ResponseBody
+    public EventHistoryDto getEventDetail(@RequestParam Integer essId, @RequestParam Integer eventId) {
+        return dashboardService.getEventDetail(essId, eventId);
+    }
+
 }

@@ -23,6 +23,9 @@ public class EventHistory {
     @Column(name = "ess_id")
     private Integer essId;
 
+    @Column(name = "event_type")
+    private String eventType;
+
     @Column(name = "event_dt")
     private LocalDateTime eventDt;
 

@@ -93,7 +93,12 @@ public class DashboardService {
 
     public EventHistoryDto getEventDetail(Integer essId, Integer eventId) {
         try {
-            EventHistory eventHistory = eventHistoryRepository.findTop9ByEssIdOrderByEventDtDesc();
+            EventHistory eventHistory = eventHistoryRepository.findByIdAndEssIdWithDetails(essId, eventId);
+
+            return eventHistory == null ? null : EventHistoryDto.from(eventHistory);
+        } catch (Exception e) {
+            log.error("EventDetail 조회 실패 essId={}, eventId={}", essId, eventId, e);
+            return null;
         }
     }
 
@@ -132,29 +137,29 @@ public class DashboardService {
     }
 
 
-    public void testData(Map<String, Object> dashboardData) {
-        RackStatusDto rackStatus = (RackStatusDto) dashboardData.get("rackStatusInfo");
-        FireStatusDto fireStaus = (FireStatusDto) dashboardData.get("fireStatusInfo");
-
-        // Rack 상태 테스트 데이터
-        if (rackStatus != null) {
-            rackStatus.setRackSoc(BigDecimal.valueOf(Math.round((80 + Math.random() * 10) * 10) / 10.0));
-            rackStatus.setRackDcVoltage(BigDecimal.valueOf(Math.round((700 + Math.random() * 50) * 10) / 10.0));
-            rackStatus.setHasAlarm(Math.random() > 0.6); // 40% 확률 알람
-        }
-        if (fireStaus != null) {
-            fireStaus.setFireStatus(Math.random() > 0.6 ? 1 : 0); // 40% 확률 화재
-        }
-
-        // Module 테스트 데이터
-        List<EssModuleStatusDto> modules = (List<EssModuleStatusDto>) dashboardData.get("moduleInfo");
-        if (modules != null) {
-            for (EssModuleStatusDto module : modules) {
-                module.setModuleDcVoltage(BigDecimal.valueOf(Math.round((33.2 + Math.random() * 0.3) * 100) / 100.0));
-                module.setMaxCellVoltage(BigDecimal.valueOf(Math.round((33.3 + Math.random() * 0.1) * 100) / 100.0));
-                module.setMinCellVoltage(BigDecimal.valueOf(Math.round((33.1 + Math.random() * 0.1) * 100) / 100.0));
-                module.setAvgModuleTemperature(BigDecimal.valueOf(Math.round((20 + Math.random() * 10) * 10) / 10.0));
-            }
-        }
-    }
+//    public void testData(Map<String, Object> dashboardData) {
+//        RackStatusDto rackStatus = (RackStatusDto) dashboardData.get("rackStatusInfo");
+//        FireStatusDto fireStaus = (FireStatusDto) dashboardData.get("fireStatusInfo");
+//
+//        // Rack 상태 테스트 데이터
+//        if (rackStatus != null) {
+//            rackStatus.setRackSoc(BigDecimal.valueOf(Math.round((80 + Math.random() * 10) * 10) / 10.0));
+//            rackStatus.setRackDcVoltage(BigDecimal.valueOf(Math.round((700 + Math.random() * 50) * 10) / 10.0));
+//            rackStatus.setHasAlarm(Math.random() > 0.6); // 40% 확률 알람
+//        }
+//        if (fireStaus != null) {
+//            fireStaus.setFireStatus(Math.random() > 0.6 ? 1 : 0); // 40% 확률 화재
+//        }
+//
+//        // Module 테스트 데이터
+//        List<EssModuleStatusDto> modules = (List<EssModuleStatusDto>) dashboardData.get("moduleInfo");
+//        if (modules != null) {
+//            for (EssModuleStatusDto module : modules) {
+//                module.setModuleDcVoltage(BigDecimal.valueOf(Math.round((33.2 + Math.random() * 0.3) * 100) / 100.0));
+//                module.setMaxCellVoltage(BigDecimal.valueOf(Math.round((33.3 + Math.random() * 0.1) * 100) / 100.0));
+//                module.setMinCellVoltage(BigDecimal.valueOf(Math.round((33.1 + Math.random() * 0.1) * 100) / 100.0));
+//                module.setAvgModuleTemperature(BigDecimal.valueOf(Math.round((20 + Math.random() * 10) * 10) / 10.0));
+//            }
+//        }
+//    }
 }

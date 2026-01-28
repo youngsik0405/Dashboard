@@ -20,9 +20,6 @@ public class EssWarningFaultDetail {
     @Column(name = "event_id")
     private Integer eventId;
 
-    @Column(name = "event_type")
-    private Integer eventType;
-
     @Column(name = "event_detail")
     private String eventDetail;
 
