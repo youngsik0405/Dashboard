@@ -6,15 +6,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const essId = params.get("essId") ? params.get("essId") : 7;
     const rackDeviceId = params.get("rackDeviceId") ? params.get("rackDeviceId") : 1;
 
+    // 차트 함수
     loadChart(essId, rackDeviceId);
 
-    // 주기적 업데이트 (5초마다)
-    setInterval(updateDashboard, 1000);
+    updateDashboard();
+    /*setInterval(updateDashboard, 1000);*/
+
+    setInterval(() => loadChart(essId, rackDeviceId), 60000);
 })
 
 // 데이터 갱신
 function updateDashboard() {
-
     const params = new URLSearchParams(location.search).get("essId");
     const essId = params ? params : 7;
 
@@ -27,6 +29,9 @@ function updateDashboard() {
             updateModule(data.moduleInfo);
             updateRackStatus(data.rackStatusInfo);
             updateFireStatus(data.fireStatusInfo);
+
+            setTimeout(updateDashboard, 1000);
+
         })
         .catch(error => {
             console.error('갱신 실패', error);
@@ -35,6 +40,7 @@ function updateDashboard() {
 
 // 이벤트 히스토리 업데이트
 function updateEventHistory(eventHistory) {
+    // 데이터 변경 확인
     if (JSON.stringify(previousEventHistory) === JSON.stringify(eventHistory)) {
         console.log('이벤트 데이터 동일 - 갱신 안함');
         return;
@@ -43,7 +49,6 @@ function updateEventHistory(eventHistory) {
     console.log('새로운 이벤트 데이터 - 갱신 시작');
 
     const tbody = document.querySelector('#eventContent tbody');
-
     const rows = tbody.querySelectorAll('tr');
 
     // eventHitory가 없거나 비어있을 경우
@@ -54,6 +59,7 @@ function updateEventHistory(eventHistory) {
         return;
     }
 
+    // 데이터 채우기
     eventHistory.forEach((events, index) => {
         if (rows[index]) {
             const count = rows[index].querySelector('.count');
@@ -94,7 +100,7 @@ function updateRackStatus (rackStatusInfo) {
 
     if (rackStatusInfo != null) {
         if (status) {
-            status.textContent = rackStatusInfo.mbmsStatus || '-';
+            status.textContent = rackStatusInfo.mbmsStatus || '-'; // 빈 문자열도 '-' 로 처리
         }
         if (soc) {
             soc.textContent = rackStatusInfo.rackSoc != null ? rackStatusInfo.rackSoc + '%' : '-';
@@ -116,6 +122,7 @@ function updateRackStatus (rackStatusInfo) {
         current.textContent = '-';
     }
 
+    // 알람 처리
     if (alarmIcon) {
         const alarmBox = alarmIcon.closest('.status div');
 
@@ -226,6 +233,7 @@ function updateModule(moduleInfo) {
 // 셀 데이터 로드
 function loadCellData(essId, moduleId) {
     const modal = document.getElementById("cellModal");
+    // 모달이 닫혀있으면 요청하지 않음
     if (!modal.classList.contains("active")) {
         return;
     }
@@ -286,20 +294,35 @@ function loadCellData(essId, moduleId) {
         });
 }
 
+function renderCellTable(cellInfo = null) {
+    const tbody = document.getElementById("cellTableBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+}
+
 
 // 모달 열기
 function openCellModal(essId, moduleId) {
     const modal = document.getElementById("cellModal");
 
-    modal.classList.add('active');
+    // 테이블 내용 지우기
+    const tbody = document.getElementById("cellTableBody");
+    if (tbody) {
+        while (tbody.firstChild) {
+            tbody.removeChild(tbody.firstChild);
+        }
+    }
 
     loadCellData(essId, moduleId);
 
+    modal.classList.add('active');
+
     // 새 인터벌 생성
-    // 모달이 열려있는 동안에만 5초마다 데이터 갱신
+    // 모달이 열려있는 동안에만 1초마다 데이터 갱신
     interval = setInterval(function () {
         loadCellData(essId, moduleId)
-    }, 5000);
+    }, 1000);
 }
 
 
@@ -307,6 +330,7 @@ function openCellModal(essId, moduleId) {
 function closeCellModal() {
     document.getElementById("cellModal").classList.remove("active");
 
+    // 인터벌 초기화
     if (interval) {
         clearInterval(interval);
     }
@@ -341,6 +365,7 @@ function switchAlertTab(className) {
 function formatData(eventDt) {
     // 서버에서 받은 eventDt를 Date 객체로 변환
     // 서버에서는 문자열로 넘어오기 때문에
+    // 한국 시간으로 변환 필요
    const date = new Date(eventDt);
    const offset = 1000 * 60 * 60 * 9;
    const korDate = new Date(date.getTime() + offset);
@@ -367,6 +392,7 @@ function showDetail(row, eventId) {
         const eventType = response.data.eventType;
         const eventDetail = response.data.eventDetail || '없음';
 
+        // 이벤트 타입 변환
         let eventTypeText = "";
 
         switch (eventType) {
@@ -390,12 +416,14 @@ function showDetail(row, eventId) {
                 break;
         }
 
+        // 팝오버 내용 채우기
         document.getElementById('eventType').textContent = eventTypeText;
         document.getElementById('eventDt').textContent = response.data.eventDt ? formatData(response.data.eventDt) : '없음';
         document.getElementById('eventDetail').textContent = eventDetail.includes('/') ? eventDetail.split('/').join('\n') : eventDetail;
 
-        const rect = row.getBoundingClientRect();
-        const offsetTop = rect.top + window.scrollY;
+        // 팝오버 위치 계산
+        const rect = row.getBoundingClientRect(); // 클릭 행의 뷰포트기준 위치정보
+        const offsetTop = rect.top + window.scrollY; // 문서 전체기준 상단 위치 (+ 스크롤한 양)
         const offsetLeft = rect.left + window.scrollX;
         const offsetBottom = offsetTop + row.offsetHeight;
         const offsetBottomTo = document.body.scrollHeight - offsetBottom + 20;
@@ -427,30 +455,30 @@ function closePopover() {
 // 차트 데이터 불러오기
 function loadChart(essId, rackDeviceId) {
     axios.get("/api/chart", {
-        params: {
-            essId: essId,
-            rackDeviceId: rackDeviceId
-        }
-    }).then(response => {
+        params : {
+            essId : essId,
+            rackDeviceId : rackDeviceId
+        }})
+        .then(response => {
 
-        let voltageData = [];
-        let currentData = [];
-        let temperatureData = [];
+            let voltageData = [];
+            let currentData = [];
+            let temperatureData = [];
 
-        // 데이터가 있으면 변환
-        if (response.data && response.data.length > 0) {
-            // 데이터 변환: Highchart 형식 [timestamp, value]
-            voltageData = response.data.map(rackData => [
-                new Date(rackData.createdAt).getTime(), rackData.rackDcVoltage != null ? rackData.rackDcVoltage : null
-            ]);
+            // 데이터가 있으면 변환
+            if (response.data && response.data.length > 0) {
+                // 데이터 변환: Highchart 형식 [timestamp, value]
+                voltageData = response.data.map(rackData => [
+                    new Date(rackData.createdAt).getTime(), rackData.rackDcVoltage != null ? rackData.rackDcVoltage : null
+                ]);
 
-            currentData = response.data.map(rackData => [
-                new Date(rackData.createdAt).getTime(), rackData.rackCurrent != null ? rackData.rackCurrent : null
-            ]);
+                currentData = response.data.map(rackData => [
+                    new Date(rackData.createdAt).getTime(), rackData.rackCurrent != null ? rackData.rackCurrent : null
+                ]);
 
-            temperatureData = response.data.map(rackData => [
-                new Date(rackData.createdAt).getTime(), rackData.rackTemperature != null ? rackData.rackTemperature : null
-            ]);
+                temperatureData = response.data.map(rackData => [
+                    new Date(rackData.createdAt).getTime(), rackData.rackTemperature != null ? rackData.rackTemperature : null
+                ]);
         }
 
         drawGraph(voltageData, currentData, temperatureData, false);
@@ -465,6 +493,10 @@ function loadChart(essId, rackDeviceId) {
 
 // 그래프 그리기
 function drawGraph(voltageData, currentData, temperatureData, isError) {
+    const now = Date.now();
+    const oneHourAgo = now - (60* 60 * 1000);
+
+
     Highcharts.setOptions({
         time: {
             useUTC: false
@@ -496,9 +528,9 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
         },
         xAxis: {
             type: 'datetime',
-            min: Date.now() - (6 * 60 * 60 * 1000),
-            max: Date.now(),
-            tackInterval: 30 * 60 * 1000,
+            min: oneHourAgo, // 1시간전
+            max: now,
+            tackInterval: 5 * 60 * 1000, // 30분 단위
             labels: {
                 format: '{value:%H:%M}'
             },
@@ -577,8 +609,8 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             name: '전압(V)',
             data: voltageData,
             yAxis: 0,
-            connectNulls: false,
-            showInLegend: voltageData.length > 0
+            connectNulls: false, // null 값이면 연결 안함, 데이터 누락 표시를 위해서
+            showInLegend: voltageData.length > 0 // 데이터가 없으면 범례 숨김
         }, {
             name: '전류(A)',
             data: currentData,
@@ -595,10 +627,19 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
         credits: {
             enabled: false
         }
+    };
+
+    const existingChart = Highcharts.charts.find(chart => chart && chart.renderTo.id === 'chart');
+
+    if (existingChart) {
+        existingChart.xAxis[0].setExtremes(oneHourAgo, now);
+
+        existingChart.series[0].setData(voltageData);
+        existingChart.series[1].setData(currentData);
+        existingChart.series[2].setData(temperatureData);
+    } else {
+        Highcharts.chart('chart', chartOptions);
     }
-
-    Highcharts.chart('chart', chartOptions);
-
 }
 
 

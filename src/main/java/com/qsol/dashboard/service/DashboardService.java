@@ -30,18 +30,24 @@ public class DashboardService {
 
 
     // 대시보드에 필요한 모든 데이터
-    public Map<String, Object> getDashboardData(Integer essId) {
+    public Map<String, Object> getDashboardData(Integer essId, Integer lastEventId) {
+
+        EssInfoDto essInfo = getEssInfo(essId);
+        RackStatusDto rackStatus = getRackStatusInfo(essId);
+        FireStatusDto fireStatus = getFireStatusInfo(essId);
+        List<EssModuleStatusDto> moduleInfo = getModuleInfo(essId);
+        List<EventHistoryDto> eventHistory = getEventHistory(essId, lastEventId);
 
         Map<String, Integer> sizeMap = new HashMap<>();
-        sizeMap.put("eventHistorySize", getEventHistory(essId) == null ? 0 : getEventHistory(essId).size());
-        sizeMap.put("moduleSize", getModuleInfo(essId) == null ? 0 : getModuleInfo(essId).size());
+        sizeMap.put("eventHistorySize", eventHistory == null ? 0 : eventHistory.size());
+        sizeMap.put("moduleSize", moduleInfo == null ? 0 : moduleInfo.size());
 
         Map<String, Object> dashboardData = new HashMap<>();
-        dashboardData.put("essInfo", getEssInfo(essId));
-        dashboardData.put("rackStatusInfo", getRackStatusInfo(essId));
-        dashboardData.put("fireStatusInfo", getFireStatusInfo(essId));
-        dashboardData.put("moduleInfo", getModuleInfo(essId));
-        dashboardData.put("eventHistory", getEventHistory(essId));
+        dashboardData.put("essInfo", essInfo);
+        dashboardData.put("rackStatusInfo", rackStatus);
+        dashboardData.put("fireStatusInfo", fireStatus);
+        dashboardData.put("moduleInfo", moduleInfo);
+        dashboardData.put("eventHistory", eventHistory);
         dashboardData.put("sizeMap", sizeMap);
 
         return dashboardData;
@@ -81,9 +87,17 @@ public class DashboardService {
     }
 
 
-    public List<EventHistoryDto> getEventHistory(Integer essId) {
+    public List<EventHistoryDto> getEventHistory(Integer essId, Integer lastEventId) {
         try {
-            List<EventHistoryDto> eventHistoryList = eventHistoryRepository.findTop9ByEssIdOrderByEventDtDesc(essId).stream().map(EventHistoryDto::from).toList();
+            List<EventHistory> eventList;
+
+            if (lastEventId != null) {
+                eventList = eventHistoryRepository.findByEssIdAndIdGreaterThanOrderByEventDtDesc(essId, lastEventId);
+            } else {
+                eventList = eventHistoryRepository.findTop9ByEssIdOrderByEventDtDesc(essId);
+            }
+
+            List<EventHistoryDto> eventHistoryList = eventList.stream().map(EventHistoryDto::from).toList();
             return eventHistoryList.isEmpty() ? null : eventHistoryList;
         } catch (Exception e) {
             log.error("EventHistory 조회 실패 essId={}", essId, e);
@@ -95,7 +109,15 @@ public class DashboardService {
         try {
             EventHistory eventHistory = eventHistoryRepository.findByIdAndEssIdWithDetails(essId, eventId);
 
-            return eventHistory == null ? null : EventHistoryDto.from(eventHistory);
+            String eventDetail = null;
+
+            if (eventHistory != null && eventHistory.getEssWarningFaultDetailList() != null && !eventHistory.getEssWarningFaultDetailList().isEmpty()) {
+                eventDetail = eventHistory.getEssWarningFaultDetailList().get(0).getEventDetail();
+            }
+
+            EventHistoryDto dto = EventHistoryDto.from(eventHistory);
+            dto.setEventDetail(eventDetail);
+            return dto;
         } catch (Exception e) {
             log.error("EventDetail 조회 실패 essId={}, eventId={}", essId, eventId, e);
             return null;
@@ -127,7 +149,7 @@ public class DashboardService {
     public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(Integer essId, Integer rackDeviceId) {
         try {
             // 현재 시점을 기준으로 6시간 전
-            LocalDateTime sixHoursAgo = LocalDateTime.now().minusHours(6);
+            LocalDateTime sixHoursAgo = LocalDateTime.now().minusHours(1);
             List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, sixHoursAgo).stream().map(EssRackStatusMinuteDto::from).toList();
             return essRackStatusMinuteList.isEmpty() ? null : essRackStatusMinuteList;
         } catch (Exception e) {
@@ -135,6 +157,7 @@ public class DashboardService {
             return null;
         }
     }
+
 
 
 //    public void testData(Map<String, Object> dashboardData) {

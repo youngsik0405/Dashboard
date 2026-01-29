@@ -31,7 +31,7 @@ public class DashboardController {
             essId = 7;
         }
 
-        Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
+        Map<String, Object> dashboardData = dashboardService.getDashboardData(essId, null);
 
         model.addAttribute("essInfo", dashboardData.get("essInfo"));
         model.addAttribute("rackStatusInfo", dashboardData.get("rackStatusInfo"));
@@ -46,8 +46,8 @@ public class DashboardController {
     // 대시보드 업데이트 api
     @GetMapping("/api/updateDashboard")
     @ResponseBody
-    public Map<String, Object> getUpdateDashboard(@RequestParam Integer essId){
-        Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
+    public Map<String, Object> getUpdateDashboard(@RequestParam Integer essId, @RequestParam(required = false) Integer lastEventId){
+        Map<String, Object> dashboardData = dashboardService.getDashboardData(essId, lastEventId);
 //        dashboardService.testData(dashboardData);
         dashboardData.put("size", dashboardData.get("sizeMap"));
         return dashboardData;
