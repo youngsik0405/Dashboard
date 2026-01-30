@@ -109,24 +109,23 @@ public class RackStatusRecent {
     // 알람 유무
     public boolean hasAlarm() {
 
-        Field[] fields = this.getClass().getDeclaredFields();
+        boolean hasAlarm =
+                Integer.valueOf(1).equals(rackVoltageUnderWarning) ||
+                Integer.valueOf(1).equals(rackVoltageOverWarning) ||
+                Integer.valueOf(1).equals(rackTemperatureUnderWarning) ||
+                Integer.valueOf(1).equals(rackTemperatureOverWarning) ||
+                Integer.valueOf(1).equals(rackCurrentOverWarning) ||
+                Integer.valueOf(1).equals(rackVoltageUnderFault1) ||
+                Integer.valueOf(1).equals(rackVoltageOverFault1) ||
+                Integer.valueOf(1).equals(rackTemperatureUnderFault1) ||
+                Integer.valueOf(1).equals(rackTemperatureOverFault1) ||
+                Integer.valueOf(1).equals(rackCurrentOverFault1) ||
+                Integer.valueOf(1).equals(moduleBmsCommunicationFault1) ||
+                Integer.valueOf(1).equals(rackInnerAdcFault1) ||
+                Integer.valueOf(1).equals(componentFuncFault1) ||
+                Integer.valueOf(1).equals(stlCheckErrorFault1) ||
+                Integer.valueOf(1).equals(rackVoltageCellVoltageTotalMismatchFault1);
 
-        for (Field field : fields) {
-            String fieldName = field.getName();
-
-            if (fieldName.endsWith("Warning") || fieldName.endsWith("Fault1")) {
-
-                try {
-                    Object value = field.get(this);
-
-                    if (Integer.valueOf(1).equals(value)) {
-                        return true;
-                    }
-                } catch (IllegalAccessException e) {
-                    log.warn("필드 접근 실패: {}", fieldName, e);
-                }
-            }
-        }
-        return false;
+        return hasAlarm;
     }
 }

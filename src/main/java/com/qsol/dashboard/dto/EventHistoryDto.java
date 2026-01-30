@@ -11,11 +11,10 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 public class EventHistoryDto {
-    private Integer Id;
+    private Integer id;
     private String eventType;
     private LocalDateTime eventDt;
     private String eventDesc;
-    private String eventDetail;
 
     public static EventHistoryDto from(EventHistory eventHistory) {
 
@@ -23,8 +22,7 @@ public class EventHistoryDto {
                 eventHistory.getId(),
                 eventHistory.getEventType(),
                 eventHistory.getEventDt(),
-                eventHistory.getEventDesc(),
-                null
+                eventHistory.getEventDesc()
         );
     }
 }

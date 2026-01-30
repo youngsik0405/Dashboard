@@ -32,7 +32,4 @@ public class EventHistory {
     @Column(name = "event_desc")
     private String eventDesc;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "event_id", referencedColumnName = "id")
-    private List<EssWarningFaultDetail> essWarningFaultDetailList;
 }

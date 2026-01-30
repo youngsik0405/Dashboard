@@ -27,6 +27,7 @@ public class DashboardService {
     private final EssCellStatusRecentRepository essCellStatusRecentRepository;
     private final EssMasterRepository essMasterRepository;
     private final EssRackStatusMinuteRepository essRackStatusMinuteRepository;
+    private final EssWarningFaultDetailRepository essWarningFaultDetailRepository;
 
 
     // 대시보드에 필요한 모든 데이터
@@ -105,21 +106,12 @@ public class DashboardService {
         }
     }
 
-    public EventHistoryDto getEventDetail(Integer essId, Integer eventId) {
+    public EssWarningFaultDetailDto getEventDetail(Integer eventId) {
         try {
-            EventHistory eventHistory = eventHistoryRepository.findByIdAndEssIdWithDetails(essId, eventId);
-
-            String eventDetail = null;
-
-            if (eventHistory != null && eventHistory.getEssWarningFaultDetailList() != null && !eventHistory.getEssWarningFaultDetailList().isEmpty()) {
-                eventDetail = eventHistory.getEssWarningFaultDetailList().get(0).getEventDetail();
-            }
-
-            EventHistoryDto dto = EventHistoryDto.from(eventHistory);
-            dto.setEventDetail(eventDetail);
-            return dto;
+            EssWarningFaultDetail essWarningFaultDetail = essWarningFaultDetailRepository.findByEventId(eventId);
+            return essWarningFaultDetail == null ? null : EssWarningFaultDetailDto.from(essWarningFaultDetail);
         } catch (Exception e) {
-            log.error("EventDetail 조회 실패 essId={}, eventId={}", essId, eventId, e);
+            log.error("EventDetail 조회 실패 eventId={}", eventId, e);
             return null;
         }
     }

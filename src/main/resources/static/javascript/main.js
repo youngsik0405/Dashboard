@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
     loadChart(essId, rackDeviceId);
 
     updateDashboard();
-    /*setInterval(updateDashboard, 1000);*/
+    setInterval(updateDashboard, 1000);
 
     setInterval(() => loadChart(essId, rackDeviceId), 60000);
 })
@@ -30,7 +30,7 @@ function updateDashboard() {
             updateRackStatus(data.rackStatusInfo);
             updateFireStatus(data.fireStatusInfo);
 
-            setTimeout(updateDashboard, 1000);
+            // setTimeout(updateDashboard, 1000);
 
         })
         .catch(error => {
@@ -75,6 +75,10 @@ function updateEventHistory(eventHistory) {
             if (eventHistoryDesc) {
                 eventHistoryDesc.textContent = events.eventDesc || '-';
             }
+
+            rows[index].dataset.eventId = events.id || '';
+            rows[index].dataset.eventType = events.eventType || '';
+            rows[index].dataset.eventDt = events.eventDt || '';
         }
     });
 
@@ -232,13 +236,7 @@ function updateModule(moduleInfo) {
 
 // 셀 데이터 로드
 function loadCellData(essId, moduleId) {
-    const modal = document.getElementById("cellModal");
-    // 모달이 닫혀있으면 요청하지 않음
-    if (!modal.classList.contains("active")) {
-        return;
-    }
-
-    axios.get("/api/cellModal",
+    return axios.get("/api/cellModal",
         {
             params: {
                 essId : essId,
@@ -253,9 +251,7 @@ function loadCellData(essId, moduleId) {
             const cellInfo = response.data.cellInfo;
 
             //tbody의 기존 행을 전부 제거(초기화)
-            while (tbody.firstChild) {
-                tbody.removeChild(tbody.firstChild);
-            }
+            tbody.innerHTML = "";
 
             // cellInfo가 있으면 행 생성
             if (cellInfo && cellInfo.length > 0) {
@@ -294,37 +290,35 @@ function loadCellData(essId, moduleId) {
         });
 }
 
-function renderCellTable(cellInfo = null) {
-    const tbody = document.getElementById("cellTableBody");
-    if (!tbody) return;
 
-    tbody.innerHTML = "";
-}
 
 
 // 모달 열기
 function openCellModal(essId, moduleId) {
-    const modal = document.getElementById("cellModal");
-
-    // 테이블 내용 지우기
-    const tbody = document.getElementById("cellTableBody");
-    if (tbody) {
-        while (tbody.firstChild) {
-            tbody.removeChild(tbody.firstChild);
-        }
-    }
-
-    loadCellData(essId, moduleId);
-
-    modal.classList.add('active');
-
-    // 새 인터벌 생성
-    // 모달이 열려있는 동안에만 1초마다 데이터 갱신
-    interval = setInterval(function () {
-        loadCellData(essId, moduleId)
-    }, 1000);
+    loadCellData(essId, moduleId).then(() => {
+        document.getElementById("cellModal").classList.add('active');
+        // 새 인터벌 생성
+        // 모달이 열려있는 동안에만 1초마다 데이터 갱신
+        interval = setInterval(function () {
+            loadCellData(essId, moduleId)
+        }, 1000);
+    });
 }
 
+document.addEventListener('click', function(e) {
+
+    const popover = document.getElementById("popover");
+
+    if (popover && popover.style.display === 'block') {
+        // 팝오버 자체를 클릭했거나, 테이블 행을 클릭한 경우는 제외
+        const clickedRow = e.target.closest('tr');
+        const isTableRow = clickedRow && clickedRow.hasAttribute('onclick');
+
+        if (!popover.contains(e.target) && !isTableRow) {
+            closePopover();
+        }
+    }
+});
 
 // 모달 닫기
 function closeCellModal() {
@@ -377,78 +371,80 @@ function formatData(eventDt) {
    return dateFormat;
 }
 
+
 // 이벤트 상세
 function showDetail(row, eventId) {
-    const params = new URLSearchParams(location.search).get("essId");
-    const essId = params ? params : 7;
+    const popover = document.getElementById("popover");
+
+    // 팝오버 위치 계산
+    const rect = row.getBoundingClientRect(); // 클릭 행의 뷰포트기준 위치정보
+    const offsetTop = rect.top + window.scrollY; // 문서 전체기준 상단 위치 (+ 스크롤한 양)
+    const offsetLeft = rect.left + window.scrollX;
+    const offsetBottom = offsetTop + row.offsetHeight;
+    const offsetBottomTo = document.body.scrollHeight - offsetBottom + 20;
+
+    popover.style.left = (offsetLeft + 590) + "px";
+    popover.style.bottom = offsetBottomTo + "px";
+    popover.style.top = `auto`;
+
+    const eventType = row.dataset.eventType;
+    const eventDt = row.dataset.eventDt;
+
+    // 이벤트 타입 변환
+    let eventTypeText = "";
+
+    switch (eventType) {
+        case "WARNING" :
+            eventTypeText = "배터리 주의";
+            break;
+        case "FAULT" :
+            eventTypeText = "배터리 경보";
+            break;
+        case "MODE" :
+            eventTypeText = "운전 모드";
+            break;
+        case "COMM ERROR" :
+            eventTypeText = "통신 오류";
+            break;
+        case "FIRE SIGNAL" :
+            eventTypeText = "화재";
+            break;
+        default :
+            eventTypeText = "기타";
+            break;
+    }
+
+    // 팝오버 내용 채우기
+    document.getElementById('eventType').textContent = eventTypeText;
+    document.getElementById('eventDt').textContent = eventDt ? formatData(eventDt) : '없음';
 
     axios.get("/api/eventDetail", {
         params: {
-            essId: essId,
             eventId: eventId
         }
     }).then(response => {
-        const popover = document.getElementById("popover");
-        const eventType = response.data.eventType;
+
         const eventDetail = response.data.eventDetail || '없음';
 
-        // 이벤트 타입 변환
-        let eventTypeText = "";
-
-        switch (eventType) {
-            case "WARNING" :
-                eventTypeText = "배터리 주의";
-                break;
-            case "FAULT" :
-                eventTypeText = "배터리 경보";
-                break;
-            case "MODE" :
-                eventTypeText = "운전 모드";
-                break;
-            case "COMM ERROR" :
-                eventTypeText = "통신 오류";
-                break;
-            case "FIRE SIGNAL" :
-                eventTypeText = "화재";
-                break;
-            default :
-                eventTypeText = "기타";
-                break;
-        }
-
-        // 팝오버 내용 채우기
-        document.getElementById('eventType').textContent = eventTypeText;
-        document.getElementById('eventDt').textContent = response.data.eventDt ? formatData(response.data.eventDt) : '없음';
         document.getElementById('eventDetail').textContent = eventDetail.includes('/') ? eventDetail.split('/').join('\n') : eventDetail;
 
-        // 팝오버 위치 계산
-        const rect = row.getBoundingClientRect(); // 클릭 행의 뷰포트기준 위치정보
-        const offsetTop = rect.top + window.scrollY; // 문서 전체기준 상단 위치 (+ 스크롤한 양)
-        const offsetLeft = rect.left + window.scrollX;
-        const offsetBottom = offsetTop + row.offsetHeight;
-        const offsetBottomTo = document.body.scrollHeight - offsetBottom + 20;
+        // popover.showPopover();
 
-        popover.style.left = (offsetLeft + 590) + "px";
-        popover.style.bottom = offsetBottomTo + "px";
-        popover.style.top = `auto`;
-
-
-        // popover.style.left = `${rect.right + 30}px`;
-        // popover.style.top = `${rect.top + (rect.height / 2)}px`;
-        // popover.style.transform = `translateY(-50%)`;
-        // popover.style.bottom = `auto`;
-
-        popover.showPopover();
+        popover.style.display = 'block';
 
     }).catch(error => {
         console.error('이벤트 상세 조회 실패', error);
     });
+
+
 }
 
 // 팝오버 닫기
 function closePopover() {
     const popover = document.getElementById("popover");
-    popover.hidePopover();
+    // popover.hidePopover();
+
+    popover.style.display = 'none';
 }
 
 

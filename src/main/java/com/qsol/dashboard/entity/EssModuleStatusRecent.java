@@ -109,31 +109,21 @@ public class EssModuleStatusRecent {
     // 알람 유무
     public boolean hasAlarm() {
 
-        // 현재 객체의 클래스에 선언된 모든 필드
-        Field[] fields = this.getClass().getDeclaredFields();
+        boolean hasAlarm =
+                Integer.valueOf(1).equals(cellVoltageUnderWarning) ||
+                Integer.valueOf(1).equals(cellVoltageOverWarning) ||
+                Integer.valueOf(1).equals(cellVoltageMaxDeviationOverWarning) ||
+                Integer.valueOf(1).equals(moduleTemperatureUnderWarning) ||
+                Integer.valueOf(1).equals(moduleTemperatureOverWarning) ||
+                Integer.valueOf(1).equals(moduleTemperatureMaxDeviationOverWarning) ||
+                Integer.valueOf(1).equals(cellVoltageUnderFault1) ||
+                Integer.valueOf(1).equals(cellVoltageOverFault1) ||
+                Integer.valueOf(1).equals(cellVoltageMaxDeviationOverFault1) ||
+                Integer.valueOf(1).equals(moduleTemperatureUnderFault1) ||
+                Integer.valueOf(1).equals(moduleTemperatureOverFault1) ||
+                Integer.valueOf(1).equals(moduleTemperatureMaxDeviationOverFault1);
 
-        // 반복문으로 모든 필드를 하나씩 검사
-        for (Field field : fields) {
-            // 필드이름을 문자열로
-            String fieldName = field.getName();
-
-            // 필드 이름이 Warning 이나 Fault1으로 끝나는 것만 알람 체크 대상
-            if (fieldName.endsWith("Warning") || fieldName.endsWith("Fault1")) {
-                try {
-                    // 현재 객체에서 해당 field 값
-                    Object value = field.get(this);
-
-                    // 값이 1이면 알람 발생으로 판단하고 true 반환
-                    if (Integer.valueOf(1).equals(value)) {
-                        return true;
-                    }
-                } catch (IllegalAccessException e) {
-                    log.warn("필드 접근 실패: {}", fieldName, e);
-                }
-            }
-        }
-
-        return false;
+        return hasAlarm;
     }
 
 }

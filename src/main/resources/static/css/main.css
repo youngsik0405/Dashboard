@@ -483,7 +483,7 @@ td {
 .modal-content {
     background-color: #fff;
     position: absolute;
-    padding: 20px;
+    padding: 40px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -494,30 +494,30 @@ td {
 }
 
 .modal-header {
-    padding: 20px;
+    padding-bottom: 20px;
     position: relative;
 }
 
-.modal-header h2 {
-    font-size: 20px;
+.modal-title {
+    font-size: 22px;
     font-weight: 600;
     color: #1f2937;
-    display: inline-block;
+    line-height: 1;
 }
 
 .close {
     color: #9ca3af;
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 600;
-    cursor: pointer;
     line-height: 1;
+    cursor: pointer;
     position: absolute;
-    right: 20px;
-    top: 15px;
+    align-content: center;
+    right: 0;
+    bottom: 20px;
 }
 
 .modal-body {
-    padding: 20px;
     background-color: #fff;
     color: #374151;
 }
@@ -587,6 +587,7 @@ td {
     border-radius: 8px;
     background-color: #D6F5D6;
     overflow: visible; !important;
+    z-index: 10;
 }
 
 .popover::before {

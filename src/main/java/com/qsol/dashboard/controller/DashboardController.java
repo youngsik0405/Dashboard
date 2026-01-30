@@ -2,6 +2,7 @@ package com.qsol.dashboard.controller;
 
 import com.qsol.dashboard.dto.EssCellStatusDto;
 import com.qsol.dashboard.dto.EssRackStatusMinuteDto;
+import com.qsol.dashboard.dto.EssWarningFaultDetailDto;
 import com.qsol.dashboard.dto.EventHistoryDto;
 import com.qsol.dashboard.service.DashboardService;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -83,8 +84,8 @@ public class DashboardController {
 
     @GetMapping("/api/eventDetail")
     @ResponseBody
-    public EventHistoryDto getEventDetail(@RequestParam Integer essId, @RequestParam Integer eventId) {
-        return dashboardService.getEventDetail(essId, eventId);
+    public EssWarningFaultDetailDto getEventDetail(@RequestParam Integer eventId) {
+        return dashboardService.getEventDetail(eventId);
     }
 
 }
