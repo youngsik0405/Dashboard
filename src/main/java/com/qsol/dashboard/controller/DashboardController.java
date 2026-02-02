@@ -1,9 +1,6 @@
 package com.qsol.dashboard.controller;
 
-import com.qsol.dashboard.dto.EssCellStatusDto;
-import com.qsol.dashboard.dto.EssRackStatusMinuteDto;
-import com.qsol.dashboard.dto.EssWarningFaultDetailDto;
-import com.qsol.dashboard.dto.EventHistoryDto;
+import com.qsol.dashboard.dto.*;
 import com.qsol.dashboard.service.DashboardService;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
@@ -78,8 +75,14 @@ public class DashboardController {
 
     @GetMapping("/api/chart")
     @ResponseBody
-    public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
-        return dashboardService.getEssRackStatusMinuteData(essId, rackDeviceId);
+    public List<EssRackStatusHistoryDto> getEssRackStatusHistoryData(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
+        return dashboardService.getEssRackStatusHistoryData(essId, rackDeviceId);
+    }
+
+    @GetMapping("/api/chart/latest")
+    @ResponseBody
+    public EssRackStatusHistoryDto getLatestEssRackStatus(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
+        return dashboardService.getLatestRackStatus(essId, rackDeviceId);
     }
 
     @GetMapping("/api/eventDetail")

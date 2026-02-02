@@ -211,8 +211,13 @@ td {
     white-space: nowrap;
 }
 
-.tab-content tr:hover {
-    background-color: #D6F5D6;
+/*.tab-content tr:hover {*/
+/*    background-color: #D6F5D6;*/
+/*    cursor: pointer;*/
+/*}*/
+
+.tab-content tbody tr.has-data:hover {
+    background-color: #EEFFEE;
     cursor: pointer;
 }
 
@@ -410,10 +415,11 @@ td {
     font-size: 14px;
 }
 
-.module-data-table tbody tr:hover {
-    background-color: #D6F5D6;
+.module-data-table tbody tr.has-data:hover {
+    background-color: #EEFFEE;
     cursor: pointer;
 }
+
 
 .module-data-table td {
     font-size: 14px;

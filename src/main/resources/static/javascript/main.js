@@ -6,13 +6,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const essId = params.get("essId") ? params.get("essId") : 7;
     const rackDeviceId = params.get("rackDeviceId") ? params.get("rackDeviceId") : 1;
 
-    // 차트 함수
     loadChart(essId, rackDeviceId);
 
     updateDashboard();
+
     setInterval(updateDashboard, 1000);
 
-    setInterval(() => loadChart(essId, rackDeviceId), 60000);
+    setInterval(() => lastRackStatusPoint(essId, rackDeviceId), 1000);
 })
 
 // 데이터 갱신
@@ -55,6 +55,8 @@ function updateEventHistory(eventHistory) {
     if (!eventHistory || eventHistory.length === 0) {
         rows.forEach(tr => {
             tr.innerHTML = '<td colspan="3">-</td>';
+            tr.classList.remove('has-data');
+            tr.onclick = null;
         });
         return;
     }
@@ -65,6 +67,14 @@ function updateEventHistory(eventHistory) {
             const count = rows[index].querySelector('.count');
             const eventHistoryDt = rows[index].querySelector('.event-dt');
             const eventHistoryDesc = rows[index].querySelector('.event-desc');
+
+            if (events) {
+                rows[index].classList.add('has-data');
+            } else {
+                rows[index].classList.remove('has-data');
+                rows[index].onclick = null;
+            }
+
 
             if (count) {
                 count.textContent = index + 1;
@@ -86,11 +96,105 @@ function updateEventHistory(eventHistory) {
     for (let i = eventHistory.length; i < rows.length; i++) {
         if (rows[i]) {
             rows[i].innerHTML = '<td colspan="3">-</td>';
+            rows[i].classList.remove('has-data');
+            rows[i].onclick = null;
         }
     }
 
     previousEventHistory = eventHistory;
 }
+
+
+// 이벤트 상세
+function showDetail(row, eventId) {
+    const popover = document.getElementById("popover");
+
+    // 팝오버 위치 계산
+    const rect = row.getBoundingClientRect(); // 클릭 행의 뷰포트기준 위치정보
+    const offsetTop = rect.top + window.scrollY; // 문서 전체기준 상단 위치 (+ 스크롤한 양)
+    const offsetLeft = rect.left + window.scrollX;
+    const offsetBottom = offsetTop + row.offsetHeight;
+    const offsetBottomTo = document.body.scrollHeight - offsetBottom + 20;
+
+    popover.style.left = (offsetLeft + 590) + "px";
+    popover.style.bottom = offsetBottomTo + "px";
+    popover.style.top = `auto`;
+
+    const eventType = row.dataset.eventType;
+    const eventDt = row.dataset.eventDt;
+
+    // 이벤트 타입 변환
+    let eventTypeText = "";
+
+    switch (eventType) {
+        case "WARNING" :
+            eventTypeText = "배터리 주의";
+            break;
+        case "FAULT" :
+            eventTypeText = "배터리 경보";
+            break;
+        case "MODE" :
+            eventTypeText = "운전 모드";
+            break;
+        case "COMM ERROR" :
+            eventTypeText = "통신 오류";
+            break;
+        case "FIRE SIGNAL" :
+            eventTypeText = "화재";
+            break;
+        default :
+            eventTypeText = "기타";
+            break;
+    }
+
+    // 팝오버 내용 채우기
+    document.getElementById('eventType').textContent = eventTypeText;
+    document.getElementById('eventDt').textContent = eventDt ? formatData(eventDt) : '없음';
+
+    axios.get("/api/eventDetail", {
+        params: {
+            eventId: eventId
+        }
+    }).then(response => {
+
+        const eventDetail = response.data.eventDetail || '없음';
+
+        document.getElementById('eventDetail').textContent = eventDetail.includes('/') ? eventDetail.split('/').join('\n') : eventDetail;
+
+        // popover.showPopover();
+
+        popover.style.display = 'block';
+
+    }).catch(error => {
+        console.error('이벤트 상세 조회 실패', error);
+    });
+}
+
+// 팝오버 닫기
+function closePopover() {
+    const popover = document.getElementById("popover");
+    // popover.hidePopover();
+
+    popover.style.display = 'none';
+}
+
+
+// 팝오버 이외 영역 클릭시 닫기
+document.addEventListener('click', function(e) {
+
+    const popover = document.getElementById("popover");
+
+    if (popover && popover.style.display === 'block') {
+        // 팝오버 자체를 클릭했거나, 테이블 행을 클릭한 경우는 제외
+        const clickedRow = e.target.closest('.event_1 tbody tr');
+        const isTableRow = clickedRow && clickedRow.hasAttribute('onclick');
+
+        if (!popover.contains(e.target) && !isTableRow) {
+            closePopover();
+        }
+    }
+});
+
 
 
 // 랙 상태 업데이트
@@ -179,6 +283,8 @@ function updateModule(moduleInfo) {
         // 모든 행을 빈 데이터로
         rows.forEach(row => {
             row.innerHTML = '<td colspan="7">-</td>';
+            row.classList.remove('has-data');
+            row.onclick = null;
         });
         return;
     }
@@ -193,6 +299,13 @@ function updateModule(moduleInfo) {
             const minCellVoltageTd = rows[index].querySelector('.min_cell_voltage');
             const avgModuleTemperatureTd = rows[index].querySelector('.avg_module_temperature');
             const alarmIcon = rows[index].querySelector('.alarm_icon');
+
+            if (module) {
+                rows[index].classList.add('has-data');
+            } else {
+                rows[index].classList.remove('has-data');
+                rows[index].onclick = null;
+            }
 
             // 각각 값을 넣기
             if (moduleIdTd) {
@@ -229,6 +342,8 @@ function updateModule(moduleInfo) {
     for (let i = moduleInfo.length; i < rows.length; i++) {
         if (rows[i]) {
             rows[i].innerHTML = '<td colspan="7">-</td>';
+            rows[i].classList.remove('has-data');
+            rows[i].onclick = null;
         }
     }
 }
@@ -244,9 +359,6 @@ function loadCellData(essId, moduleId) {
             }
         }).then(function (response) {
             const tbody = document.getElementById("cellTableBody");
-            if (!tbody) {
-                return;
-            }
 
             const cellInfo = response.data.cellInfo;
 
@@ -290,11 +402,14 @@ function loadCellData(essId, moduleId) {
         });
 }
 
-
-
-
 // 모달 열기
 function openCellModal(essId, moduleId) {
+    const modal = document.getElementById("cellModal");
+
+    if (modal.classList.contains('active')) {
+        return;
+    }
+
     loadCellData(essId, moduleId).then(() => {
         document.getElementById("cellModal").classList.add('active');
         // 새 인터벌 생성
@@ -305,21 +420,6 @@ function openCellModal(essId, moduleId) {
     });
 }
 
-document.addEventListener('click', function(e) {
-
-    const popover = document.getElementById("popover");
-
-    if (popover && popover.style.display === 'block') {
-        // 팝오버 자체를 클릭했거나, 테이블 행을 클릭한 경우는 제외
-        const clickedRow = e.target.closest('tr');
-        const isTableRow = clickedRow && clickedRow.hasAttribute('onclick');
-
-        if (!popover.contains(e.target) && !isTableRow) {
-            closePopover();
-        }
-    }
-});
-
 // 모달 닫기
 function closeCellModal() {
     document.getElementById("cellModal").classList.remove("active");
@@ -329,7 +429,6 @@ function closeCellModal() {
         clearInterval(interval);
     }
 }
-
 
 // 탭 전환
 function switchAlertTab(className) {
@@ -355,98 +454,6 @@ function switchAlertTab(className) {
     }
 }
 
-// 날짜 포맷 변환
-function formatData(eventDt) {
-    // 서버에서 받은 eventDt를 Date 객체로 변환
-    // 서버에서는 문자열로 넘어오기 때문에
-    // 한국 시간으로 변환 필요
-   const date = new Date(eventDt);
-   const offset = 1000 * 60 * 60 * 9;
-   const korDate = new Date(date.getTime() + offset);
-
-   const dateFormat = korDate.toISOString().replace('T', ' ').replace('Z', '').split('.')[0];
-
-   // console.log(dateFormat);
-
-   return dateFormat;
-}
-
-
-// 이벤트 상세
-function showDetail(row, eventId) {
-    const popover = document.getElementById("popover");
-
-    // 팝오버 위치 계산
-    const rect = row.getBoundingClientRect(); // 클릭 행의 뷰포트기준 위치정보
-    const offsetTop = rect.top + window.scrollY; // 문서 전체기준 상단 위치 (+ 스크롤한 양)
-    const offsetLeft = rect.left + window.scrollX;
-    const offsetBottom = offsetTop + row.offsetHeight;
-    const offsetBottomTo = document.body.scrollHeight - offsetBottom + 20;
-
-    popover.style.left = (offsetLeft + 590) + "px";
-    popover.style.bottom = offsetBottomTo + "px";
-    popover.style.top = `auto`;
-
-    const eventType = row.dataset.eventType;
-    const eventDt = row.dataset.eventDt;
-
-    // 이벤트 타입 변환
-    let eventTypeText = "";
-
-    switch (eventType) {
-        case "WARNING" :
-            eventTypeText = "배터리 주의";
-            break;
-        case "FAULT" :
-            eventTypeText = "배터리 경보";
-            break;
-        case "MODE" :
-            eventTypeText = "운전 모드";
-            break;
-        case "COMM ERROR" :
-            eventTypeText = "통신 오류";
-            break;
-        case "FIRE SIGNAL" :
-            eventTypeText = "화재";
-            break;
-        default :
-            eventTypeText = "기타";
-            break;
-    }
-
-    // 팝오버 내용 채우기
-    document.getElementById('eventType').textContent = eventTypeText;
-    document.getElementById('eventDt').textContent = eventDt ? formatData(eventDt) : '없음';
-
-    axios.get("/api/eventDetail", {
-        params: {
-            eventId: eventId
-        }
-    }).then(response => {
-
-        const eventDetail = response.data.eventDetail || '없음';
-
-        document.getElementById('eventDetail').textContent = eventDetail.includes('/') ? eventDetail.split('/').join('\n') : eventDetail;
-
-        // popover.showPopover();
-
-        popover.style.display = 'block';
-
-    }).catch(error => {
-        console.error('이벤트 상세 조회 실패', error);
-    });
-
-
-}
-
-// 팝오버 닫기
-function closePopover() {
-    const popover = document.getElementById("popover");
-    // popover.hidePopover();
-
-    popover.style.display = 'none';
-}
-
 
 // 차트 데이터 불러오기
 function loadChart(essId, rackDeviceId) {
@@ -464,20 +471,33 @@ function loadChart(essId, rackDeviceId) {
             // 데이터가 있으면 변환
             if (response.data && response.data.length > 0) {
                 // 데이터 변환: Highchart 형식 [timestamp, value]
-                voltageData = response.data.map(rackData => [
-                    new Date(rackData.createdAt).getTime(), rackData.rackDcVoltage != null ? rackData.rackDcVoltage : null
+                voltageData = response.data.map(history => [
+                    new Date(history.createdAt).getTime(), history.rackDcVoltage != null ? history.rackDcVoltage : null
                 ]);
 
-                currentData = response.data.map(rackData => [
-                    new Date(rackData.createdAt).getTime(), rackData.rackCurrent != null ? rackData.rackCurrent : null
+                currentData = response.data.map(history => [
+                    new Date(history.createdAt).getTime(), history.rackCurrent != null ? history.rackCurrent : null
                 ]);
 
-                temperatureData = response.data.map(rackData => [
-                    new Date(rackData.createdAt).getTime(), rackData.rackTemperature != null ? rackData.rackTemperature : null
+                temperatureData = response.data.map(history => [
+                    new Date(history.createdAt).getTime(), history.rackTemperature != null ? history.rackTemperature : null
                 ]);
-        }
+            }
 
-        drawGraph(voltageData, currentData, temperatureData, false);
+            // 차트 생성
+            drawGraph(voltageData, currentData, temperatureData, false);
+
+            // 차트 객체에 마지막 시간 저장
+            const rackChart = Highcharts.charts.find(chart =>
+                chart && chart.renderTo.id === 'chart'
+            );
+
+            if (rackChart) {
+                rackChart.lastCreatedAtMillis =
+                    (response.data && response.data.length > 0)
+                        ? new Date(response.data[response.data.length - 1].createdAt).getTime()
+                        : 0;
+            }
 
     }).catch(error => {
         console.error('차트 데이터 조회 실패',error);
@@ -486,26 +506,100 @@ function loadChart(essId, rackDeviceId) {
     });
 }
 
+// 최신 1건 업데이트
+function lastRackStatusPoint(essId, rackDeviceId) {
+    const rackChart = Highcharts.charts.find(chart =>
+        chart && chart.renderTo.id === 'chart'
+    );
+
+    if (!rackChart) {
+        return;
+    }
+
+    if (typeof rackChart.lastCreatedAtMillis !== 'number') {
+        rackChart.lastCreatedAtMillis = 0;
+    }
+
+    axios.get("/api/chart/latest", {
+        params: {
+            essId : essId,
+            rackDeviceId : rackDeviceId
+        }
+    }).then(response => {
+        const lastestRackStatus = response.data;
+
+        if (!lastestRackStatus) {
+            return;
+        }
+
+        const createdAtMillis = new Date(lastestRackStatus.createdAt).getTime();
+
+        // 중복/역순 방지를 위해서
+        if (createdAtMillis <= rackChart.lastCreatedAtMillis) {
+            return;
+        }
+
+        rackChart.lastCreatedAtMillis = createdAtMillis;
+
+        const now = Date.now();
+        const oneHourAgo = now - (60 * 60 * 1000);
+
+        // 첫 포인트가 1시간보다 오래되면 shift이동
+        const shiftPoint = rackChart.series[0].data.length > 0 && (rackChart.series[0].data[0].x < oneHourAgo);
+
+        rackChart.series[0].addPoint([createdAtMillis, lastestRackStatus.rackDcVoltage ?? null], false, shiftPoint);
+        rackChart.series[1].addPoint([createdAtMillis, lastestRackStatus.rackCurrent ?? null], false, shiftPoint);
+        rackChart.series[2].addPoint([createdAtMillis, lastestRackStatus.rackTemperature ?? null], false, shiftPoint);
+
+        if (!rackChart.isZoomed) {
+            rackChart.xAxis[0].setExtremes(oneHourAgo, now, false);
+        }
+
+        rackChart.redraw();
+
+    }).catch(error => {
+        console.error("최신 차트 데이터 조회 실패", error);
+    });
+
+}
 
 // 그래프 그리기
 function drawGraph(voltageData, currentData, temperatureData, isError) {
     const now = Date.now();
     const oneHourAgo = now - (60* 60 * 1000);
-
+    const showLegend = voltageData.length > 0 || currentData.length > 0 || temperatureData.length > 0;
 
     Highcharts.setOptions({
         time: {
             useUTC: false
         },
         lang: {
-            noData: isError ? '데이터를 불러오는 중 오류가 발생했습니다.' : '최근 6시간동안 수집한 데이터가 없습니다.'
+            noData: isError ? '데이터를 불러오는 중 오류가 발생했습니다.' : '최근 1시간동안 수집한 데이터가 없습니다.'
         }
     });
 
     const chartOptions = {
         chart: {
             type: 'line',
-            zoomType: 'xy'
+            zoomType: 'xy',
+            events: {
+                selection: function (event) {
+                    if (event.resetSelection) {
+                        this.isZoomed = false;
+                        return true;
+                    }
+
+                    if (event.xAxis || event.yAxis) {
+                        // 차트 객체에 줌 상태 저장
+                        this.isZoomed = true;
+                        return true;
+                    }
+                },
+                load: function () {
+                    // 초기 로드 시 줌 상태 false
+                    this.isZoomed = false;
+                }
+            }
         },
         title: {
             text: 'rack 그래프',
@@ -526,11 +620,20 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             type: 'datetime',
             min: oneHourAgo, // 1시간전
             max: now,
-            tackInterval: 5 * 60 * 1000, // 30분 단위
+            tickInterval: 5 * 60 * 1000, // 5분 단위
             labels: {
                 format: '{value:%H:%M}'
             },
-            showEmpty: false
+            showEmpty: false,
+            events: {
+                afterSetExtremes: function(e) {
+                    // Reset zoom 버튼 클릭 감지
+                    if (e.trigger === 'zoom' && this.chart.resetZoomButton == null) {
+                        // resetZoomButton이 사라진 상태면 reset 판단
+                        this.chart.isZoomed = false;
+                    }
+                }
+            }
         },
         yAxis: [{
             title: {
@@ -584,9 +687,10 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             shared: true,
             crosshairs: true,
             xDateFormat: '%H:%M:%S',
-            headerFormat: '<span style="font-size: 16px; font-weight: bold;">{point.key}</span><br/>',
-            pointFormat: '<span style="color:{series.color}; font-size: 20px;">{series.name} : {point.y}</span><br/>',
-            valueDecimals: 1
+            valueDecimals: 1,
+            style: {
+                fontSize: '18px'
+            }
         },
         noData: {
             position: {
@@ -606,36 +710,48 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             data: voltageData,
             yAxis: 0,
             connectNulls: false, // null 값이면 연결 안함, 데이터 누락 표시를 위해서
-            showInLegend: voltageData.length > 0 // 데이터가 없으면 범례 숨김
+            showInLegend: showLegend
         }, {
             name: '전류(A)',
             data: currentData,
             yAxis: 1,
             connectNulls: false,
-            showInLegend: currentData.length > 0
+            showInLegend: showLegend
         }, {
             name: '온도(˚C)',
             data: temperatureData,
             yAxis: 2,
             connectNulls: false,
-            showInLegend: temperatureData.length > 0
+            showInLegend: showLegend
         }],
         credits: {
             enabled: false
-        }
+        },
+        isZoomed: false
     };
 
     const existingChart = Highcharts.charts.find(chart => chart && chart.renderTo.id === 'chart');
 
-    if (existingChart) {
-        existingChart.xAxis[0].setExtremes(oneHourAgo, now);
-
-        existingChart.series[0].setData(voltageData);
-        existingChart.series[1].setData(currentData);
-        existingChart.series[2].setData(temperatureData);
-    } else {
+    if (!existingChart) {
         Highcharts.chart('chart', chartOptions);
     }
+}
+
+
+// 날짜 포맷 변환
+function formatData(eventDt) {
+    // 서버에서 받은 eventDt를 Date 객체로 변환
+    // 서버에서는 문자열로 넘어오기 때문에
+    // 한국 시간으로 변환 필요
+    const date = new Date(eventDt);
+    const offset = 1000 * 60 * 60 * 9;
+    const korDate = new Date(date.getTime() + offset);
+
+    const dateFormat = korDate.toISOString().replace('T', ' ').replace('Z', '').split('.')[0];
+
+    // console.log(dateFormat);
+
+    return dateFormat;
 }
 
 

@@ -19,15 +19,16 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class DashboardService {
 
-    private final MemberEssRepository memberEssRepository;
     private final RackStatusRecentRepository rackStatusRecentRepository;
     private final FireStatusRecentRepository fireStatusRecentRepository;
     private final EventHistoryRepository eventHistoryRepository;
     private final EssModuleStatusRecentRepository essModuleStatusRecentRepository;
     private final EssCellStatusRecentRepository essCellStatusRecentRepository;
     private final EssMasterRepository essMasterRepository;
-    private final EssRackStatusMinuteRepository essRackStatusMinuteRepository;
+//    private final EssRackStatusMinuteRepository essRackStatusMinuteRepository;
     private final EssWarningFaultDetailRepository essWarningFaultDetailRepository;
+
+    private final EssRackStatusHistoryRepository essRackStatusHistoryRepository;
 
 
     // 대시보드에 필요한 모든 데이터
@@ -65,7 +66,6 @@ public class DashboardService {
             return null;
         }
     }
-
 
     public RackStatusDto getRackStatusInfo(Integer essId) {
         try {
@@ -138,16 +138,21 @@ public class DashboardService {
         }
     }
 
-    public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(Integer essId, Integer rackDeviceId) {
+    public List<EssRackStatusHistoryDto> getEssRackStatusHistoryData(Integer essId, Integer rackDeviceId) {
         try {
-            // 현재 시점을 기준으로 6시간 전
-            LocalDateTime sixHoursAgo = LocalDateTime.now().minusHours(1);
-            List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, sixHoursAgo).stream().map(EssRackStatusMinuteDto::from).toList();
-            return essRackStatusMinuteList.isEmpty() ? null : essRackStatusMinuteList;
+            // 현재 시점을 기준으로 1시간 전
+            LocalDateTime hourAgo = LocalDateTime.now().minusHours(1);
+            List<EssRackStatusHistoryDto> essRackStatusHistoryList = essRackStatusHistoryRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, hourAgo).stream().map(EssRackStatusHistoryDto::from).toList();
+            return essRackStatusHistoryList.isEmpty() ? null : essRackStatusHistoryList;
         } catch (Exception e) {
             log.error("EssRackStatusMinuteData 조회 실패 essId={}", essId, e);
             return null;
         }
+    }
+
+    public EssRackStatusHistoryDto getLatestRackStatus(Integer essId,Integer rackDeviceId) {
+        EssRackStatusHistory essRackStatusHistory = essRackStatusHistoryRepository.findTop1ByEssIdAndRackDeviceIdOrderByCreatedAtDesc(essId, rackDeviceId);
+        return essRackStatusHistory == null ? null : EssRackStatusHistoryDto.from(essRackStatusHistory);
     }
 
 
