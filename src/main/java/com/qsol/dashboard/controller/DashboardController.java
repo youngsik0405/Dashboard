@@ -4,6 +4,7 @@ import com.qsol.dashboard.dto.*;
 import com.qsol.dashboard.service.DashboardService;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,12 +43,11 @@ public class DashboardController {
         return "main";
     }
 
-    // 대시보드 업데이트 api
+    // 대시보드 업데이트
     @GetMapping("/api/updateDashboard")
     @ResponseBody
     public Map<String, Object> getUpdateDashboard(@RequestParam Integer essId, @RequestParam(required = false) Integer lastEventId){
         Map<String, Object> dashboardData = dashboardService.getDashboardData(essId, lastEventId);
-//        dashboardService.testData(dashboardData);
         dashboardData.put("size", dashboardData.get("sizeMap"));
         return dashboardData;
     }
@@ -57,14 +58,6 @@ public class DashboardController {
     public Map<String, Object> getCellModal(@RequestParam Integer essId, @RequestParam Integer moduleId) {
         // 데이터 조회
         List<EssCellStatusDto> cellInfo = dashboardService.getCellInfo(essId, moduleId);
-
-//        // 테스트 용
-//        if (cellInfo != null) {
-//            for (EssCellStatusDto cell : cellInfo) {
-//                double randomVolt = 3.2 + (Math.random() * 0.4);
-//                cell.setVoltage(BigDecimal.valueOf(Math.round(randomVolt * 100) / 100.0));
-//            }
-//        }
 
         Map<String, Object> cellInfoData = new HashMap<>();
         cellInfoData.put("cellInfo", cellInfo);
@@ -81,8 +74,11 @@ public class DashboardController {
 
     @GetMapping("/api/chart/latest")
     @ResponseBody
-    public EssRackStatusHistoryDto getLatestEssRackStatus(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
-        return dashboardService.getLatestRackStatus(essId, rackDeviceId);
+    public List<EssRackStatusHistoryDto> getLatestEssRackStatus(@RequestParam Integer essId,
+                                                                @RequestParam Integer rackDeviceId,
+                                                                @RequestParam(required = false)
+                                                                @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime lastCreatedAt) {
+        return dashboardService.getLatestRackStatus(essId, rackDeviceId, lastCreatedAt);
     }
 
     @GetMapping("/api/eventDetail")

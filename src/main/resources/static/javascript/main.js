@@ -404,11 +404,14 @@ function loadCellData(essId, moduleId) {
 
 // 모달 열기
 function openCellModal(essId, moduleId) {
-    const modal = document.getElementById("cellModal");
+    const tbody = document.getElementById("moduleTableBody");
 
-    if (modal.classList.contains('active')) {
+    // 더블 클릭 금지 - 중복 실행을 방지하기 위해서
+    if (tbody.style.pointerEvents === 'none') {
         return;
     }
+
+    tbody.style.pointerEvents = 'none';
 
     loadCellData(essId, moduleId).then(() => {
         document.getElementById("cellModal").classList.add('active');
@@ -423,6 +426,11 @@ function openCellModal(essId, moduleId) {
 // 모달 닫기
 function closeCellModal() {
     document.getElementById("cellModal").classList.remove("active");
+
+    const tbody = document.getElementById("moduleTableBody");
+    if (tbody) {
+        tbody.style.pointerEvents = 'auto';
+    }
 
     // 인터벌 초기화
     if (interval) {
@@ -516,57 +524,73 @@ function lastRackStatusPoint(essId, rackDeviceId) {
         return;
     }
 
-    if (typeof rackChart.lastCreatedAtMillis !== 'number') {
-        rackChart.lastCreatedAtMillis = 0;
+    // 차트가 기억하는 마지막 데이터의 시간 가져오기
+   let lastTime = rackChart.lastCreatedAtMillis || 0;
+
+    if (lastTime === 0) {
+        return;
     }
+
+    // 시간을 포맷팅 해서 "yyyy-MM-dd HH:mm:ss"형태로 반환
+    const lastCreatedAt = formatData(lastTime);
 
     axios.get("/api/chart/latest", {
         params: {
             essId : essId,
-            rackDeviceId : rackDeviceId
+            rackDeviceId : rackDeviceId,
+            lastCreatedAt: lastCreatedAt
         }
     }).then(response => {
         const lastestRackStatus = response.data;
 
-        if (!lastestRackStatus) {
+        // 받아온 데이터가 없으면 종료
+        if (!lastestRackStatus || lastestRackStatus.length === 0) {
             return;
         }
-
-        const createdAtMillis = new Date(lastestRackStatus.createdAt).getTime();
-
-        // 중복/역순 방지를 위해서
-        if (createdAtMillis <= rackChart.lastCreatedAtMillis) {
-            return;
-        }
-
-        rackChart.lastCreatedAtMillis = createdAtMillis;
 
         const now = Date.now();
         const oneHourAgo = now - (60 * 60 * 1000);
+        let updated = false;
 
-        // 첫 포인트가 1시간보다 오래되면 shift이동
-        const shiftPoint = rackChart.series[0].data.length > 0 && (rackChart.series[0].data[0].x < oneHourAgo);
+        // 받아몬 리스트를 순차적으로 차트에 추가
+        lastestRackStatus.forEach(data => {
+            const createdAtMillis = new Date(data.createdAt).getTime();
 
-        rackChart.series[0].addPoint([createdAtMillis, lastestRackStatus.rackDcVoltage ?? null], false, shiftPoint);
-        rackChart.series[1].addPoint([createdAtMillis, lastestRackStatus.rackCurrent ?? null], false, shiftPoint);
-        rackChart.series[2].addPoint([createdAtMillis, lastestRackStatus.rackTemperature ?? null], false, shiftPoint);
+            // 중복 방지 (차트의 마지막 시간보다 작거나 같으면 패스)
+            if (createdAtMillis <= rackChart.lastCreatedAtMillis) {
+                return;
+            }
 
-        if (!rackChart.isZoomed) {
-            rackChart.xAxis[0].setExtremes(oneHourAgo, now, false);
+            // 차트의 마지막 시간 갱신
+            rackChart.lastCreatedAtMillis = createdAtMillis;
+            updated = true;
+
+            // 데이터가 1시간을 넘어가면 왼쪽 데이터지우기
+            const shiftPoint = rackChart.series[0].data.length > 0 && (rackChart.series[0].data[0].x < oneHourAgo);
+
+            // 데이터 추가
+            rackChart.series[0].addPoint([createdAtMillis, data.rackDcVoltage ?? null], false, shiftPoint);
+            rackChart.series[1].addPoint([createdAtMillis, data.rackCurrent ?? null], false, shiftPoint);
+            rackChart.series[2].addPoint([createdAtMillis, data.rackTemperature ?? null], false, shiftPoint);
+        });
+
+        // 데이터가 추가되면 차트 다시 그리기
+        if (updated) {
+            // 줌 상태가 아닐 때 x축 업데이트
+            if (!rackChart.isZoomed) {
+                rackChart.xAxis[0].setExtremes(oneHourAgo, now, false);
+            }
+            rackChart.redraw();
         }
-
-        rackChart.redraw();
-
     }).catch(error => {
         console.error("최신 차트 데이터 조회 실패", error);
     });
-
 }
 
 // 그래프 그리기
 function drawGraph(voltageData, currentData, temperatureData, isError) {
     const now = Date.now();
-    const oneHourAgo = now - (60* 60 * 1000);
+    const oneHourAgo = now - (60 * 60 * 1000);
     const showLegend = voltageData.length > 0 || currentData.length > 0 || temperatureData.length > 0;
 
     Highcharts.setOptions({
@@ -584,6 +608,7 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             zoomType: 'xy',
             events: {
                 selection: function (event) {
+                    // 리셋 시 줌 상태 false
                     if (event.resetSelection) {
                         this.isZoomed = false;
                         return true;
@@ -639,48 +664,24 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             title: {
                 text: ''
             },
+            plotBands: [{
+                from: 50,
+                to: 60,
+                color: 'rgba(59, 130, 246, 0.15)'
+            }, {
+                from: 20,
+                to: 30,
+                color: 'rgba(245, 158, 11, 0.15)'
+            }, {
+                from: 0,
+                to: 2,
+                color: 'rgba(244, 63, 94, 0.15)'
+            }],
             labels: {
-                style: {
-                    color: '#2caffe'
-                },
-                format: '{value} V'
+                format: '{value}'
             },
-            tickInterval: 10,
-            tickAmount: 4,
-            min: 30,
-            max: 60,
-            showEmpty: false
-        }, {
-            title: {
-                text: ''
-            },
-            labels: {
-                style: {
-                    color: '#544fc5'
-                },
-                format: '{value} A'
-            },
-            opposite: true,
-            tickInterval: 15,
-            tickAmount: 4,
+            tickAmount: 5,
             min: 0,
-            max: 45,
-            showEmpty: false
-        }, {
-            title: {
-                text: ''
-            },
-            labels: {
-                style: {
-                    color: '#5BD75B'
-                },
-                format: '{value} ˚C'
-            },
-            opposite: true,
-            tickInterval: 15,
-            tickAmount: 4,
-            min: 0,
-            max: 45,
             showEmpty: false
         }],
         tooltip: {
@@ -708,26 +709,60 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
         series: [{
             name: '전압(V)',
             data: voltageData,
-            yAxis: 0,
             connectNulls: false, // null 값이면 연결 안함, 데이터 누락 표시를 위해서
             showInLegend: showLegend
         }, {
             name: '전류(A)',
             data: currentData,
-            yAxis: 1,
             connectNulls: false,
             showInLegend: showLegend
         }, {
             name: '온도(˚C)',
             data: temperatureData,
-            yAxis: 2,
             connectNulls: false,
             showInLegend: showLegend
-        }],
+        },
+        {
+            name: '전압 정상범위 (50~60V)',
+            data: [],
+            showInLegend: true,
+            color: 'rgba(59, 130, 246, 0.4)',
+            marker: {
+                symbol: 'square',
+                radius: 8
+            },
+            showMarker: true,
+            lineWidth: 0
+        },
+        {
+            name: '온도 정상범위 (20~30˚C)',
+            data: [],
+            showInLegend: true,
+            color: 'rgba(245, 158, 11, 0.4)',
+            marker: {
+                symbol: 'square',
+                radius: 8
+            },
+            showMarker: true,
+            lineWidth: 0
+        },
+        {
+            name: '전류 정상범위 (0~2A)',
+            data: [],
+            showInLegend: true,
+            color: 'rgba(244, 63, 94, 0.4)',
+            marker: {
+                symbol: 'square',
+                radius: 8
+            },
+            showMarker: true,
+            lineWidth: 0
+        }
+        ],
         credits: {
             enabled: false
         },
-        isZoomed: false
+        isZoomed: false,
     };
 
     const existingChart = Highcharts.charts.find(chart => chart && chart.renderTo.id === 'chart');
@@ -736,7 +771,6 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
         Highcharts.chart('chart', chartOptions);
     }
 }
-
 
 // 날짜 포맷 변환
 function formatData(eventDt) {
