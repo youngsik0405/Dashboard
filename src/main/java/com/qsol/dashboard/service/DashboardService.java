@@ -67,6 +67,7 @@ public class DashboardService {
         }
     }
 
+    // RackStatus 정보
     public RackStatusDto getRackStatusInfo(Integer essId) {
         try {
             RackStatusRecent rackStatusRecent = rackStatusRecentRepository.findByEssId(essId);
@@ -77,6 +78,7 @@ public class DashboardService {
         }
     }
 
+    // 화재 감지 정보
     public FireStatusDto getFireStatusInfo(Integer essId) {
         try {
             FireStatusRecent fireStatusRecent = fireStatusRecentRepository.findByEssId(essId);
@@ -88,6 +90,7 @@ public class DashboardService {
     }
 
 
+    // EventHistory 정보
     public List<EventHistoryDto> getEventHistory(Integer essId, Integer lastEventId) {
         try {
             List<EventHistory> eventList;
@@ -106,6 +109,7 @@ public class DashboardService {
         }
     }
 
+    // EventHistory 상세 정보
     public EssWarningFaultDetailDto getEventDetail(Integer eventId) {
         try {
             EssWarningFaultDetail essWarningFaultDetail = essWarningFaultDetailRepository.findByEventId(eventId);
@@ -116,7 +120,7 @@ public class DashboardService {
         }
     }
 
-
+    // Module 정보
     public List<EssModuleStatusDto> getModuleInfo(Integer essId) {
         try {
             List<EssModuleStatusDto> essModuleStatusList = essModuleStatusRecentRepository.findByEssIdWithRack(essId).stream().map(EssModuleStatusDto::from).toList();
@@ -127,7 +131,7 @@ public class DashboardService {
         }
     }
 
-
+    // Cell 정보
     public List<EssCellStatusDto> getCellInfo(Integer essId, Integer moduleId) {
         try {
             List<EssCellStatusDto> essCellStatusList = essCellStatusRecentRepository.findByEssIdAndModuleIdOrderByCellIdAsc(essId, moduleId).stream().map(EssCellStatusDto::from).toList();
@@ -138,6 +142,7 @@ public class DashboardService {
         }
     }
 
+    // RackHistory 정보 (차트 그리기 위해서)
     public List<EssRackStatusHistoryDto> getEssRackStatusHistoryData(Integer essId, Integer rackDeviceId) {
         try {
             // 현재 시점을 기준으로 1시간 전
@@ -150,6 +155,7 @@ public class DashboardService {
         }
     }
 
+    // 최신 RackStatus (차트 업데이트 위해서)
     public List<EssRackStatusHistoryDto> getLatestRackStatus(Integer essId,Integer rackDeviceId, LocalDateTime lastCreatedAt) {
         try {
           List<EssRackStatusHistoryDto> essRackStatusHistoryList = essRackStatusHistoryRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, lastCreatedAt).stream().map(EssRackStatusHistoryDto::from).toList();

@@ -2,16 +2,21 @@ let previousEventHistory = null; // 이전 데이터와 현재 데이터 비교�
 
 // DOM 로드 완료 후 실행
 document.addEventListener('DOMContentLoaded', function () {
+    // URL 쿼리 파라미터에서 essId와 rackDeviceId 추출
     const params = new URLSearchParams(location.search);
     const essId = params.get("essId") ? params.get("essId") : 7;
     const rackDeviceId = params.get("rackDeviceId") ? params.get("rackDeviceId") : 1;
 
+    // 초기 차트 그리기
     loadChart(essId, rackDeviceId);
 
+    // 대시보드 갱신
     updateDashboard();
 
-    setInterval(updateDashboard, 1000);
+    // 대시보드 갱신 인터벌
+    // setInterval(updateDashboard, 1000);
 
+    // 차트 실시간 갱신 인터벌
     setInterval(() => lastRackStatusPoint(essId, rackDeviceId), 1000);
 })
 
@@ -30,7 +35,7 @@ function updateDashboard() {
             updateRackStatus(data.rackStatusInfo);
             updateFireStatus(data.fireStatusInfo);
 
-            // setTimeout(updateDashboard, 1000);
+            setTimeout(updateDashboard, 1000);
 
         })
         .catch(error => {
@@ -41,12 +46,12 @@ function updateDashboard() {
 // 이벤트 히스토리 업데이트
 function updateEventHistory(eventHistory) {
     // 데이터 변경 확인
-    if (JSON.stringify(previousEventHistory) === JSON.stringify(eventHistory)) {
-        console.log('이벤트 데이터 동일 - 갱신 안함');
-        return;
-    }
-
-    console.log('새로운 이벤트 데이터 - 갱신 시작');
+    // if (JSON.stringify(previousEventHistory) === JSON.stringify(eventHistory)) {
+    //     console.log('이벤트 데이터 동일 - 갱신 안함');
+    //     return;
+    // }
+    //
+    // console.log('새로운 이벤트 데이터 - 갱신 시작');
 
     const tbody = document.querySelector('#eventContent tbody');
     const rows = tbody.querySelectorAll('tr');
@@ -56,7 +61,7 @@ function updateEventHistory(eventHistory) {
         rows.forEach(tr => {
             tr.innerHTML = '<td colspan="3">-</td>';
             tr.classList.remove('has-data');
-            tr.onclick = null;
+            tr.onclick = null; // 클릭 이벤트 제거
         });
         return;
     }
@@ -86,6 +91,7 @@ function updateEventHistory(eventHistory) {
                 eventHistoryDesc.textContent = events.eventDesc || '-';
             }
 
+            // 상세 보기를 위한 데이터셋 저장
             rows[index].dataset.eventId = events.id || '';
             rows[index].dataset.eventType = events.eventType || '';
             rows[index].dataset.eventDt = events.eventDt || '';
@@ -101,6 +107,7 @@ function updateEventHistory(eventHistory) {
         }
     }
 
+    // 현재 데이터를 이전데이터로 저장
     previousEventHistory = eventHistory;
 }
 
@@ -161,8 +168,6 @@ function showDetail(row, eventId) {
 
         document.getElementById('eventDetail').textContent = eventDetail.includes('/') ? eventDetail.split('/').join('\n') : eventDetail;
 
-        // popover.showPopover();
-
         popover.style.display = 'block';
 
     }).catch(error => {
@@ -172,16 +177,12 @@ function showDetail(row, eventId) {
 
 // 팝오버 닫기
 function closePopover() {
-    const popover = document.getElementById("popover");
-    // popover.hidePopover();
-
-    popover.style.display = 'none';
+    document.getElementById("popover").style.display = 'none';
 }
 
 
 // 팝오버 이외 영역 클릭시 닫기
 document.addEventListener('click', function(e) {
-
     const popover = document.getElementById("popover");
 
     if (popover && popover.style.display === 'block') {
@@ -213,21 +214,60 @@ function updateRackStatus (rackStatusInfo) {
         if (soc) {
             soc.textContent = rackStatusInfo.rackSoc != null ? rackStatusInfo.rackSoc + '%' : '-';
         }
+        // 임계값에 따른 색상 변화
         if (voltage) {
             voltage.textContent = rackStatusInfo.rackDcVoltage != null ? rackStatusInfo.rackDcVoltage + 'V' : '-';
+
+            voltage.classList.remove('threshold-high', 'threshold-low');
+            if (rackStatusInfo.rackDcVoltage != null) {
+                if (rackStatusInfo.rackDcVoltage > 60) {
+                    voltage.classList.add('threshold-high');
+                } else if (rackStatusInfo.rackDcVoltage < 50) {
+                    voltage.classList.add('threshold-low');
+                }
+            }
         }
         if (temperature) {
             temperature.textContent = rackStatusInfo.rackTemperature != null ? rackStatusInfo.rackTemperature + '˚C' : '-';
+
+            temperature.classList.remove('threshold-high', 'threshold-low');
+            if (rackStatusInfo.rackTemperature != null) {
+                if (rackStatusInfo.rackTemperature > 30) {
+                    temperature.classList.add('threshold-high');
+                } else if (rackStatusInfo.rackTemperature < 20) {
+                    temperature.classList.add('threshold-low');
+                }
+            }
         }
         if (current) {
             current.textContent = rackStatusInfo.rackCurrent != null ? rackStatusInfo.rackCurrent + 'A' : '-';
+
+            current.classList.remove('threshold-high', 'threshold-low');
+            if (rackStatusInfo.rackCurrent != null) {
+                if (rackStatusInfo.rackCurrent > 2) {
+                    current.classList.add('threshold-high');
+                } else if (rackStatusInfo.rackCurrent < 0) {
+                    current.classList.add('threshold-low');
+                }
+            }
         }
     } else {
+        // 데이터가 없는 경우
         status.textContent = '-';
         soc.textContent = '-';
         voltage.textContent = '-';
         temperature.textContent = '-';
         current.textContent = '-';
+
+        if (voltage) {
+            voltage.classList.remove('threshold-high', 'threshold-low');
+        }
+        if (temperature) {
+            temperature.classList.remove('threshold-high', 'threshold-low');
+        }
+        if (current) {
+            current.classList.remove('threshold-high', 'threshold-low');
+        }
     }
 
     // 알람 처리
@@ -275,7 +315,6 @@ function updateFireStatus(fireStatusInfo) {
 // 모듈 데이터 업데이트
 function updateModule(moduleInfo) {
     const tbody = document.getElementById("moduleTableBody");
-
     const rows = tbody.querySelectorAll('tr');
 
     // moduleInfo가 없거나 비어있을 경우 모든 행 '-'
@@ -314,17 +353,55 @@ function updateModule(moduleInfo) {
             if (statusTd) {
                 statusTd.textContent = module.batteryModuleStatus || '-';
             }
+
+            // 임계값 처리
             if (moduleDcVoltageTd) {
                 moduleDcVoltageTd.textContent = module.moduleDcVoltage != null ? module.moduleDcVoltage : '-';
+
+                moduleDcVoltageTd.classList.remove('threshold-high', 'threshold-low');
+                if (module.moduleDcVoltage != null) {
+                    if (module.moduleDcVoltage > 40) {
+                        moduleDcVoltageTd.classList.add('threshold-high');
+                    } else if (module.moduleDcVoltage < 20) {
+                        moduleDcVoltageTd.classList.add('threshold-low');
+                    }
+                }
             }
             if (maxCellVoltageTd) {
                 maxCellVoltageTd.textContent = module.maxCellVoltage != null ? module.maxCellVoltage : '-';
+
+                maxCellVoltageTd.classList.remove('threshold-high', 'threshold-low');
+                if (module.maxCellVoltage != null) {
+                    if (module.maxCellVoltage > 4.045) {
+                        maxCellVoltageTd.classList.add('threshold-high');
+                    } else if (module.maxCellVoltage < 4.0) {
+                        maxCellVoltageTd.classList.add('threshold-low');
+                    }
+                }
             }
             if (minCellVoltageTd) {
                 minCellVoltageTd.textContent = module.minCellVoltage != null ? module.minCellVoltage : '-';
+
+                minCellVoltageTd.classList.remove('threshold-high', 'threshold-low');
+                if (module.minCellVoltage != null) {
+                    if (module.minCellVoltage > 4.045) {
+                        minCellVoltageTd.classList.add('threshold-high');
+                    } else if (module.minCellVoltage < 4.0) {
+                        minCellVoltageTd.classList.add('threshold-low');
+                    }
+                }
             }
             if (avgModuleTemperatureTd) {
                 avgModuleTemperatureTd.textContent = module.avgModuleTemperature != null ? module.avgModuleTemperature : '-';
+
+                avgModuleTemperatureTd.classList.remove('threshold-high', 'threshold-low');
+                if (module.avgModuleTemperature != null) {
+                    if (module.avgModuleTemperature > 30) {
+                        avgModuleTemperatureTd.classList.add('threshold-high');
+                    } else if (module.avgModuleTemperature < 20) {
+                        avgModuleTemperatureTd.classList.add('threshold-low');
+                    }
+                }
             }
 
             // 알람 유무로 아이콘 표시하거나 '-' 표시
@@ -362,26 +439,33 @@ function loadCellData(essId, moduleId) {
 
             const cellInfo = response.data.cellInfo;
 
-            //tbody의 기존 행을 전부 제거(초기화)
+            //tbody의 기존 내용을 전부 제거(초기화)
             tbody.innerHTML = "";
 
             // cellInfo가 있으면 행 생성
             if (cellInfo && cellInfo.length > 0) {
                 cellInfo.forEach(cell => {
                     const tr = document.createElement("tr");
+                    const moduleTd = document.createElement('td');
+                    const cellTd = document.createElement('td');
+                    const voltageTd = document.createElement('td');
 
-                    const values = [
-                        cell.moduleId != null ? cell.moduleId : '-',
-                        cell.cellId != null ? cell.cellId : '-',
-                        cell.voltage != null ? cell.voltage : '-'
-                    ];
+                    moduleTd.textContent = cell.moduleId != null ? cell.moduleId : '-';
+                    cellTd.textContent = cell.cellId != null ? cell.cellId : '-';
+                    voltageTd.textContent = cell.voltage != null ? cell.voltage : '-';
 
-                    // td를 생성해서 값을 넣고 tr에 넣기
-                    values.forEach(value => {
-                        const td = document.createElement('td');
-                        td.textContent = value;
-                        tr.appendChild(td);
-                    });
+                    // 임계값 처리
+                    if (cell.voltage != null) {
+                        if (cell.voltage > 4.03) {
+                            voltageTd.classList.add('threshold-high');
+                        } else if (cell.voltage < 4.0) {
+                            voltageTd.classList.add('threshold-low');
+                        }
+                    }
+
+                    tr.appendChild(moduleTd);
+                    tr.appendChild(cellTd);
+                    tr.appendChild(voltageTd);
 
                     tbody.appendChild(tr);
                 });
@@ -429,7 +513,7 @@ function closeCellModal() {
 
     const tbody = document.getElementById("moduleTableBody");
     if (tbody) {
-        tbody.style.pointerEvents = 'auto';
+        tbody.style.pointerEvents = 'auto'; // 다시 클릭 가능하게 복구
     }
 
     // 인터벌 초기화
@@ -478,18 +562,50 @@ function loadChart(essId, rackDeviceId) {
 
             // 데이터가 있으면 변환
             if (response.data && response.data.length > 0) {
+
+                let prevTime = null;
+
+                response.data.forEach(history => {
+                    const currentTime = new Date(history.createdAt).getTime();
+
+                    if (prevTime !== null) {
+                        const timeDiff = currentTime - prevTime;
+
+                        if (timeDiff > 10000) {
+                            const disconnectStartTime = prevTime + 1000;
+
+                            voltageData.push([disconnectStartTime, null]);
+                            currentData.push([disconnectStartTime, null]);
+                            temperatureData.push([disconnectStartTime, null]);
+
+                            const disconnectEndTime = currentTime - 1000;
+
+                            voltageData.push([disconnectEndTime, null]);
+                            currentData.push([disconnectEndTime, null]);
+                            temperatureData.push([disconnectEndTime, null]);
+                        }
+                    }
+
+                    voltageData.push([currentTime, history.rackDcVoltage != null ? history.rackDcVoltage : null]);
+                    currentData.push([currentTime, history.rackCurrent != null ? history.rackCurrent : null]);
+                    temperatureData.push([currentTime, history.rackTemperature != null ? history.rackTemperature : null]);
+
+                    prevTime = currentTime;
+                });
+
+
                 // 데이터 변환: Highchart 형식 [timestamp, value]
-                voltageData = response.data.map(history => [
-                    new Date(history.createdAt).getTime(), history.rackDcVoltage != null ? history.rackDcVoltage : null
-                ]);
-
-                currentData = response.data.map(history => [
-                    new Date(history.createdAt).getTime(), history.rackCurrent != null ? history.rackCurrent : null
-                ]);
-
-                temperatureData = response.data.map(history => [
-                    new Date(history.createdAt).getTime(), history.rackTemperature != null ? history.rackTemperature : null
-                ]);
+                // voltageData = response.data.map(history => [
+                //     new Date(history.createdAt).getTime(), history.rackDcVoltage != null ? history.rackDcVoltage : null
+                // ]);
+                //
+                // currentData = response.data.map(history => [
+                //     new Date(history.createdAt).getTime(), history.rackCurrent != null ? history.rackCurrent : null
+                // ]);
+                //
+                // temperatureData = response.data.map(history => [
+                //     new Date(history.createdAt).getTime(), history.rackTemperature != null ? history.rackTemperature : null
+                // ]);
             }
 
             // 차트 생성
@@ -499,7 +615,6 @@ function loadChart(essId, rackDeviceId) {
             const rackChart = Highcharts.charts.find(chart =>
                 chart && chart.renderTo.id === 'chart'
             );
-
             if (rackChart) {
                 rackChart.lastCreatedAtMillis =
                     (response.data && response.data.length > 0)
@@ -514,7 +629,7 @@ function loadChart(essId, rackDeviceId) {
     });
 }
 
-// 최신 1건 업데이트
+// 차트 업데이트
 function lastRackStatusPoint(essId, rackDeviceId) {
     const rackChart = Highcharts.charts.find(chart =>
         chart && chart.renderTo.id === 'chart'
@@ -558,17 +673,42 @@ function lastRackStatusPoint(essId, rackDeviceId) {
 
             // 중복 방지 (차트의 마지막 시간보다 작거나 같으면 패스)
             if (createdAtMillis <= rackChart.lastCreatedAtMillis) {
+                console.log('중복 데이터 스킵:', createdAtMillis, '<=', rackChart.lastCreatedAtMillis);
                 return;
+            }
+
+            // 10초 이상 연결이 끊긴 경우 데이터 null
+            const timeDiff = createdAtMillis - rackChart.lastCreatedAtMillis;
+            console.log('시간차:', timeDiff, 'ms');
+
+            if (timeDiff > 10000) {
+                console.log('연결 끊김 감지 - null 포인트 추가');
+                // 연결끊김 시작 지점
+                const disconnectStartTime = rackChart.lastCreatedAtMillis + 1000;
+                const shiftDisconnectStart = rackChart.series[0].data.length > 0 && (rackChart.series[0].data[0].x < oneHourAgo);
+
+                rackChart.series[0].addPoint([disconnectStartTime, null], false, shiftDisconnectStart);
+                rackChart.series[1].addPoint([disconnectStartTime, null], false, shiftDisconnectStart);
+                rackChart.series[2].addPoint([disconnectStartTime, null], false, shiftDisconnectStart);
+
+                // 연결끊김 끝 지점
+                const disconnectEndTime = createdAtMillis - 1000;
+                const shiftDisconnectEnd = rackChart.series[0].data.length > 0 && (rackChart.series[0].data[0].x < oneHourAgo);
+
+                rackChart.series[0].addPoint([disconnectEndTime, null], false, shiftDisconnectEnd);
+                rackChart.series[1].addPoint([disconnectEndTime, null], false, shiftDisconnectEnd);
+                rackChart.series[2].addPoint([disconnectEndTime, null], false, shiftDisconnectEnd);
             }
 
             // 차트의 마지막 시간 갱신
             rackChart.lastCreatedAtMillis = createdAtMillis;
             updated = true;
 
-            // 데이터가 1시간을 넘어가면 왼쪽 데이터지우기
+            // 데이터가 있고, 데이터가 1시간을 지났으면 shift 처리
             const shiftPoint = rackChart.series[0].data.length > 0 && (rackChart.series[0].data[0].x < oneHourAgo);
 
-            // 데이터 추가
+            // 데이터 추가 - addPoint(추가할 데이터, redraw 여부, shiftPoint 여부)
+            // redraw 여부를 false로 한 이유는 나중에 한번에 처리하기 위해서
             rackChart.series[0].addPoint([createdAtMillis, data.rackDcVoltage ?? null], false, shiftPoint);
             rackChart.series[1].addPoint([createdAtMillis, data.rackCurrent ?? null], false, shiftPoint);
             rackChart.series[2].addPoint([createdAtMillis, data.rackTemperature ?? null], false, shiftPoint);
@@ -725,46 +865,44 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
         {
             name: '전압 정상범위 (50~60V)',
             data: [],
-            showInLegend: true,
-            color: 'rgba(59, 130, 246, 0.4)',
+            showInLegend: showLegend,
+            color: 'rgba(59, 130, 246, 0.15)',
             marker: {
                 symbol: 'square',
                 radius: 8
             },
-            showMarker: true,
             lineWidth: 0
         },
         {
             name: '온도 정상범위 (20~30˚C)',
             data: [],
-            showInLegend: true,
-            color: 'rgba(245, 158, 11, 0.4)',
+            showInLegend: showLegend,
+            color: 'rgba(245, 158, 11, 0.15)',
             marker: {
                 symbol: 'square',
                 radius: 8
             },
-            showMarker: true,
             lineWidth: 0
         },
         {
             name: '전류 정상범위 (0~2A)',
             data: [],
-            showInLegend: true,
-            color: 'rgba(244, 63, 94, 0.4)',
+            showInLegend: showLegend,
+            color: 'rgba(244, 63, 94, 0.15)',
             marker: {
                 symbol: 'square',
                 radius: 8
             },
-            showMarker: true,
             lineWidth: 0
         }
         ],
         credits: {
             enabled: false
         },
-        isZoomed: false,
+        isZoomed: false
     };
 
+    // 차트가 없으면 새로 생성
     const existingChart = Highcharts.charts.find(chart => chart && chart.renderTo.id === 'chart');
 
     if (!existingChart) {
@@ -782,8 +920,6 @@ function formatData(eventDt) {
     const korDate = new Date(date.getTime() + offset);
 
     const dateFormat = korDate.toISOString().replace('T', ' ').replace('Z', '').split('.')[0];
-
-    // console.log(dateFormat);
 
     return dateFormat;
 }

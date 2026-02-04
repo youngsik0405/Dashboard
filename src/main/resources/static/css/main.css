@@ -642,3 +642,15 @@ td {
     vertical-align: top;
     line-height: 1.5;
 }
+
+/*====================================================================================================================*/
+
+.threshold-high {
+    color: #DC2626 !important;
+    font-weight: 600;
+}
+
+.threshold-low {
+    color: #2563EB !important;
+    font-weight: 600;
+}

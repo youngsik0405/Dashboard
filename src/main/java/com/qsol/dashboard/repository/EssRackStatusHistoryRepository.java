@@ -8,6 +8,4 @@ import java.util.List;
 
 public interface EssRackStatusHistoryRepository extends JpaRepository<EssRackStatusHistory, Long> {
     List<EssRackStatusHistory> findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(Integer essId, Integer rackDeviceId, LocalDateTime createdAt);
-
-    EssRackStatusHistory findTop1ByEssIdAndRackDeviceIdOrderByCreatedAtDesc(Integer essId, Integer rackDeviceId);
 }
