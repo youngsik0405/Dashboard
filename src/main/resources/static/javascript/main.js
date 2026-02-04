@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 차트 실시간 갱신 인터벌
     setInterval(() => lastRackStatusPoint(essId, rackDeviceId), 1000);
+    // lastRackStatusPoint(essId, rackDeviceId);
 })
 
 // 데이터 갱신
@@ -725,6 +726,10 @@ function lastRackStatusPoint(essId, rackDeviceId) {
     }).catch(error => {
         console.error("최신 차트 데이터 조회 실패", error);
     });
+
+    // .finally(() => {
+    //         setTimeout(() => lastRackStatusPoint(essId, rackDeviceId), 1000);
+    //     })
 }
 
 // 그래프 그리기
