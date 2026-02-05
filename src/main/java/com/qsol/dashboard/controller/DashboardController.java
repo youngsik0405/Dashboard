@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -68,13 +67,13 @@ public class DashboardController {
 
     @GetMapping("/api/chart")
     @ResponseBody
-    public List<EssRackStatusHistoryDto> getEssRackStatusHistoryData(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
-        return dashboardService.getEssRackStatusHistoryData(essId, rackDeviceId);
+    public List<EssRackStatusMinuteDto> getEssRackStatusHistoryData(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
+        return dashboardService.getEssRackStatusMinuteData(essId, rackDeviceId);
     }
 
     @GetMapping("/api/chart/latest")
     @ResponseBody
-    public List<EssRackStatusHistoryDto> getLatestEssRackStatus(@RequestParam Integer essId,
+    public List<EssRackStatusMinuteDto> getLatestEssRackStatus(@RequestParam Integer essId,
                                                                 @RequestParam Integer rackDeviceId,
                                                                 @RequestParam(required = false)
                                                                 @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime lastCreatedAt) {

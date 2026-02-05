@@ -8,8 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface EssModuleStatusRecentRepository extends JpaRepository<EssModuleStatusRecent, Long> {
-    @Query("SELECT m FROM EssModuleStatusRecent m " +
-            "JOIN m.rackStatusRecent r " +
-            "WHERE r.essId = :essId")
-    List<EssModuleStatusRecent> findByEssIdWithRack(Integer essId);
+//    @Query("SELECT m FROM EssModuleStatusRecent m " +
+//            "JOIN m.rackStatusRecent r " +
+//            "WHERE r.essId = :essId")
+//    List<EssModuleStatusRecent> findByEssIdWithRack(Integer essId);
+
+    List<EssModuleStatusRecent> findByEssId(Integer essId);
 }

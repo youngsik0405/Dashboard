@@ -325,6 +325,7 @@ td {
     width: 100%;
     color: #56ACFF;
     padding-bottom: 15px;
+    font-weight: 600;
 }
 
 .status div span:last-child {
@@ -371,19 +372,43 @@ td {
 }
 
 .status div.alarm-background-active {
-    background-color: #FF6A33 !important;
+    background-color: #FECACA !important;
 }
 
 .status div.fire-background-active {
-    background-color: #FF6A33 !important;
+    background-color: #FECACA !important;
 }
 
 .status div i.alarm-active {
-    color: #FF6A33;
+    color: #EF4444;
 }
 
 .status div i.fire-active {
-    color: #FF6A33;
+    color: #EF4444;
+}
+
+.status div.alarm-background-active span:first-child {
+    color: #991B1B;
+}
+
+.status div.fire-background-active span:first-child {
+    color: #991B1B;
+}
+
+.status div.threshold-warning {
+    background-color: #FFEDD5 !important;
+}
+
+.status div.threshold-fault {
+    background-color: #FECACA !important;
+}
+
+.status div.threshold-warning span:first-child {
+    color: #92400E !important;
+}
+
+.status div.threshold-fault span:first-child {
+    color: #991B1B !important;
 }
 
 /* =================================================================================================================================== */
@@ -418,6 +443,14 @@ td {
 .module-data-table tbody tr.has-data:hover {
     background-color: #EEFFEE;
     cursor: pointer;
+}
+
+.module-data-table tbody tr.has-data:has(.threshold-warning):hover {
+    background-color: #FFF7ED;
+}
+
+.module-data-table tbody tr.has-data:has(.threshold-fault):hover {
+    background-color: #FEE2E2;
 }
 
 
@@ -645,12 +678,12 @@ td {
 
 /*====================================================================================================================*/
 
-.threshold-high {
-    color: #DC2626 !important;
+.threshold-warning {
+    color: #FB923C !important;
     font-weight: 600;
 }
 
-.threshold-low {
-    color: #2563EB !important;
+.threshold-fault {
+    color: #EF4444 !important;
     font-weight: 600;
 }

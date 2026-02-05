@@ -29,7 +29,7 @@ public class EssModuleStatusRecent {
     @Column(name = "rack_device_id", insertable = false, updatable = false)
     private Integer rackDeviceId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
             @JoinColumn(name = "ess_id", referencedColumnName = "ess_id"),
             @JoinColumn(name = "rack_device_id", referencedColumnName = "rack_device_id")

@@ -25,7 +25,7 @@ public class DashboardService {
     private final EssModuleStatusRecentRepository essModuleStatusRecentRepository;
     private final EssCellStatusRecentRepository essCellStatusRecentRepository;
     private final EssMasterRepository essMasterRepository;
-//    private final EssRackStatusMinuteRepository essRackStatusMinuteRepository;
+    private final EssRackStatusMinuteRepository essRackStatusMinuteRepository;
     private final EssWarningFaultDetailRepository essWarningFaultDetailRepository;
 
     private final EssRackStatusHistoryRepository essRackStatusHistoryRepository;
@@ -123,7 +123,7 @@ public class DashboardService {
     // Module 정보
     public List<EssModuleStatusDto> getModuleInfo(Integer essId) {
         try {
-            List<EssModuleStatusDto> essModuleStatusList = essModuleStatusRecentRepository.findByEssIdWithRack(essId).stream().map(EssModuleStatusDto::from).toList();
+            List<EssModuleStatusDto> essModuleStatusList = essModuleStatusRecentRepository.findByEssId(essId).stream().map(EssModuleStatusDto::from).toList();
             return essModuleStatusList.isEmpty() ? null : essModuleStatusList;
         } catch (Exception e) {
             log.error("ModuleInfo 조회 실패 essId={}", essId, e);
@@ -143,12 +143,12 @@ public class DashboardService {
     }
 
     // RackHistory 정보 (차트 그리기 위해서)
-    public List<EssRackStatusHistoryDto> getEssRackStatusHistoryData(Integer essId, Integer rackDeviceId) {
+    public List<EssRackStatusMinuteDto> getEssRackStatusMinuteData(Integer essId, Integer rackDeviceId) {
         try {
             // 현재 시점을 기준으로 1시간 전
-            LocalDateTime hourAgo = LocalDateTime.now().minusHours(1);
-            List<EssRackStatusHistoryDto> essRackStatusHistoryList = essRackStatusHistoryRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, hourAgo).stream().map(EssRackStatusHistoryDto::from).toList();
-            return essRackStatusHistoryList.isEmpty() ? null : essRackStatusHistoryList;
+            LocalDateTime threeHoursAgo = LocalDateTime.now().minusHours(3);
+            List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, threeHoursAgo).stream().map(EssRackStatusMinuteDto::from).toList();
+            return essRackStatusMinuteList.isEmpty() ? null : essRackStatusMinuteList;
         } catch (Exception e) {
             log.error("EssRackStatusMinuteData 조회 실패 essId={}", essId, e);
             return null;
@@ -156,10 +156,10 @@ public class DashboardService {
     }
 
     // 최신 RackStatus (차트 업데이트 위해서)
-    public List<EssRackStatusHistoryDto> getLatestRackStatus(Integer essId,Integer rackDeviceId, LocalDateTime lastCreatedAt) {
+    public List<EssRackStatusMinuteDto> getLatestRackStatus(Integer essId,Integer rackDeviceId, LocalDateTime lastCreatedAt) {
         try {
-          List<EssRackStatusHistoryDto> essRackStatusHistoryList = essRackStatusHistoryRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, lastCreatedAt).stream().map(EssRackStatusHistoryDto::from).toList();
-          return essRackStatusHistoryList.isEmpty() ? null : essRackStatusHistoryList;
+          List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, lastCreatedAt).stream().map(EssRackStatusMinuteDto::from).toList();
+          return essRackStatusMinuteList.isEmpty() ? null : essRackStatusMinuteList;
         } catch (Exception e) {
             log.error("LatestRackStatus 조회 실패 essId={}", essId, e);
             return null;
