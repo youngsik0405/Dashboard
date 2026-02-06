@@ -31,5 +31,4 @@ public class EventHistory {
 
     @Column(name = "event_desc")
     private String eventDesc;
-
 }

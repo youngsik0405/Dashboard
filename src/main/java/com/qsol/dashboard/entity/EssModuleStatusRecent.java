@@ -23,18 +23,11 @@ public class EssModuleStatusRecent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idNumber;
 
-    @Column(name = "ess_id", insertable = false, updatable = false)
+    @Column(name = "ess_id")
     private Integer essId;
 
-    @Column(name = "rack_device_id", insertable = false, updatable = false)
+    @Column(name = "rack_device_id")
     private Integer rackDeviceId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-            @JoinColumn(name = "ess_id", referencedColumnName = "ess_id"),
-            @JoinColumn(name = "rack_device_id", referencedColumnName = "rack_device_id")
-    })
-    private RackStatusRecent rackStatusRecent;
 
     @Column(name = "module_id")
     private Integer moduleId;

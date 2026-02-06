@@ -22,7 +22,10 @@ function updateDashboard() {
     const params = new URLSearchParams(location.search).get("essId");
     const essId = params ? params : 7;
 
-    axios.get("/api/updateDashboard", { params: { essId } })
+    axios.get("/api/updateDashboard", {
+        params: {
+            essId : essId
+        } })
         .then(response => {
             const data = response.data;
 
@@ -42,18 +45,17 @@ function updateDashboard() {
 
 // 이벤트 히스토리 업데이트
 function updateEventHistory(eventHistory) {
-    // 데이터 변경 확인
-    // if (JSON.stringify(previousEventHistory) === JSON.stringify(eventHistory)) {
-    //     console.log('이벤트 데이터 동일 - 갱신 안함');
-    //     return;
-    // }
-    //
+    // 데이터가 이전과 동일하면 리턴
+    if (JSON.stringify(previousEventHistory) === JSON.stringify(eventHistory)) {
+        // console.log('이벤트 데이터 동일 - 갱신 안함');
+        return;
+    }
     // console.log('새로운 이벤트 데이터 - 갱신 시작');
 
     const tbody = document.querySelector('#eventContent tbody');
     const rows = tbody.querySelectorAll('tr');
 
-    // eventHitory가 없거나 비어있을 경우
+    // 데이터가 없는 경우 테이블 (- 표시)
     if (!eventHistory || eventHistory.length === 0) {
         rows.forEach(tr => {
             tr.innerHTML = '<td colspan="3">-</td>';
@@ -70,6 +72,7 @@ function updateEventHistory(eventHistory) {
             const eventHistoryDt = rows[index].querySelector('.event-dt');
             const eventHistoryDesc = rows[index].querySelector('.event-desc');
 
+            // 데이터 유무에 따른 행 효과 활성화/비활성화
             if (events) {
                 rows[index].classList.add('has-data');
             } else {
@@ -77,12 +80,11 @@ function updateEventHistory(eventHistory) {
                 rows[index].onclick = null;
             }
 
-
             if (count) {
                 count.textContent = index + 1;
             }
             if (eventHistoryDt) {
-                eventHistoryDt.textContent = events.eventDt ? formatData(events.eventDt) : '-';
+                eventHistoryDt.textContent = events.eventDt ? formatDate(events.eventDt) : '-';
             }
             if (eventHistoryDesc) {
                 eventHistoryDesc.textContent = events.eventDesc || '-';
@@ -153,7 +155,12 @@ function showDetail(row, eventId) {
 
     // 팝오버 내용 채우기
     document.getElementById('eventType').textContent = eventTypeText;
-    document.getElementById('eventDt').textContent = eventDt ? formatData(eventDt) : '없음';
+
+    if (eventDt) {
+        document.getElementById('eventDt').textContent = formatDate(eventDt);
+    } else {
+        document.getElementById('eventDt').textContent = '알수없음';
+    }
 
     axios.get("/api/eventDetail", {
         params: {
@@ -163,13 +170,23 @@ function showDetail(row, eventId) {
 
         const eventDetail = response.data.eventDetail || '없음';
 
-        document.getElementById('eventDetail').textContent = eventDetail.includes('/') ? eventDetail.split('/').join('\n') : eventDetail;
+        if (eventDetail.includes('/')) {
+            document.getElementById('eventDetail').textContent = eventDetail.split('/').join('\n');
+        } else {
+            document.getElementById('eventDetail').textContent = eventDetail;
+        }
 
-        popover.style.display = 'block';
+        openPopover();
 
     }).catch(error => {
         console.error('이벤트 상세 조회 실패', error);
     });
+}
+
+// 팝오버 열기
+function openPopover() {
+    document.getElementById("popover").style.display = 'block';
+
 }
 
 // 팝오버 닫기
@@ -566,65 +583,32 @@ function loadChart(essId, rackDeviceId) {
             rackDeviceId : rackDeviceId
         }})
         .then(response => {
+            const data = response.data;
 
-            let voltageData = [];
-            let currentData = [];
-            let temperatureData = [];
+            const xAxis = data.xAxis || [];
+            const voltageData = data.voltageData || [];
+            const currentData = data.currentData || [];
+            const temperatureData = data.temperatureData || [];
 
-            // 데이터가 있으면 변환
-            if (response.data && response.data.length > 0) {
-
-                // 이전 시간
-                let prevTime = null;
-
-                response.data.forEach(history => {
-                    // 현재 시간
-                    const currentTime = new Date(history.createdAt).getTime();
-
-                    // 연결이 끊겼을 경우
-                    // 이전 데이터와 현재 데이터의 시간 차이가 3분을 초과하면 연결 끊김으로 간주
-                    if (prevTime !== null) {
-                        const timeDiff = currentTime - prevTime;
-
-                        if (timeDiff > 180000) {
-                            // 끊김 시작 시점(이전 시간 1초후 null 데이터 삽입)
-                            const disconnectStartTime = prevTime + 60000;
-
-                            voltageData.push([disconnectStartTime, null]);
-                            currentData.push([disconnectStartTime, null]);
-                            temperatureData.push([disconnectStartTime, null]);
-
-                            // 끊김 끝 지점(현재 시간 1초전 null 데이터 삽입)
-                            const disconnectEndTime = currentTime - 60000;
-
-                            voltageData.push([disconnectEndTime, null]);
-                            currentData.push([disconnectEndTime, null]);
-                            temperatureData.push([disconnectEndTime, null]);
-                        }
-                    }
-
-                    // 정상 데이터
-                    voltageData.push([currentTime, history.rackDcVoltage != null ? history.rackDcVoltage : null]);
-                    currentData.push([currentTime, history.rackCurrent != null ? history.rackCurrent : null]);
-                    temperatureData.push([currentTime, history.rackTemperature != null ? history.rackTemperature : null]);
-
-                    prevTime = currentTime;
-                });
-            }
+            const voltage = xAxis.map((time, i) => [time, voltageData[i]]);
+            const current = xAxis.map((time, i) => [time, currentData[i]]);
+            const temperature = xAxis.map((time, i) => [time, temperatureData[i]]);
 
             // 차트 생성
-            drawGraph(voltageData, currentData, temperatureData, false);
+            drawGraph(voltage, current, temperature, false);
 
             // 차트 객체에 마지막 시간 저장
             // 업데이트에서 중복 데이터를 방지하기 위해서
             const rackChart = Highcharts.charts.find(chart =>
                 chart && chart.renderTo.id === 'chart'
             );
+
             if (rackChart) {
-                rackChart.lastCreatedAtMillis =
-                    (response.data && response.data.length > 0)
-                        ? new Date(response.data[response.data.length - 1].createdAt).getTime()
-                        : 0;
+                rackChart.lastCreatedAtMillis = 0;
+
+                if (response.data && response.data.length > 0) {
+                    rackChart.lastCreatedAtMillis = new Date(response.data[response.data.length - 1].createdAt).getTime();
+                }
 
                 setTimeout(() => lastRackStatusPoint(essId, rackDeviceId), 60000);
             }
@@ -642,19 +626,12 @@ function lastRackStatusPoint(essId, rackDeviceId) {
         chart && chart.renderTo.id === 'chart'
     );
 
-    if (!rackChart) {
+    if (!rackChart || !rackChart.lastCreatedAtMillis) {
         return;
     }
 
     // 차트가 기억하는 마지막 데이터의 시간 가져오기
-   let lastTime = rackChart.lastCreatedAtMillis || 0;
-
-    if (lastTime === 0) {
-        return;
-    }
-
-    // 시간을 포맷팅 해서 "yyyy-MM-dd HH:mm:ss"형태로 반환
-    const lastCreatedAt = formatData(lastTime);
+    const lastCreatedAt = formatDate(rackChart.lastCreatedAtMillis);
 
     axios.get("/api/chart/latest", {
         params: {
@@ -672,7 +649,6 @@ function lastRackStatusPoint(essId, rackDeviceId) {
 
         const now = Date.now();
         const threeHoursAgo = now - (3 * 60 * 60 * 1000);
-        let updated = false;
 
         // 받아몬 리스트를 순차적으로 차트에 추가
         lastestRackStatus.forEach(data => {
@@ -820,6 +796,7 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             title: {
                 text: ''
             },
+            // 정상범위 밴드
             plotBands: [{
                 from: 50,
                 to: 60,
@@ -827,10 +804,10 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             }, {
                 from: 20,
                 to: 30,
-                color: 'rgba(251, 146, 60, 0.12)'
+                color: 'rgba(59, 130, 246, 0.12)'
             }, {
                 from: 0,
-                to: 2,
+                to: 2.0,
                 color: 'rgba(168, 85, 247, 0.12)'
             }],
             labels: {
@@ -868,9 +845,11 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             showInLegend: showLegend,
             color: '#22C55E',
             zones: [
-                { value: 50, color: '#2563EB'},
-                { value: 60, color: '#22C55E'},
-                { color: '#DC2626'}
+                { value: 45, color: '#EF4444'}, // fault
+                { value: 50, color: '#FB923C'}, // warning
+                { value: 60, color: '#22C55E'}, // 정상 범위
+                { value: 65, color: '#FB923C'}, // warning
+                { color: '#EF4444'} // fault
             ]
         }, {
             name: '전류(A)',
@@ -879,20 +858,22 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             showInLegend: showLegend,
             color: '#A855F7',
             zones: [
-                { value: 0, color: '#2563EB'},
-                { value: 2, color: '#A855F7'},
-                { color: '#EF4444'}
+                { value: 2.0, color: '#A855F7'}, // 정상 범위
+                { value: 2.5, color: '#FB923C'}, // warning
+                { color: '#EF4444'} // fault
             ]
         }, {
             name: '온도(˚C)',
             data: temperatureData,
             connectNulls: false,
             showInLegend: showLegend,
-            color: '#FB923C',
+            color: '#3B82F6',
             zones: [
-                { value: 20, color: '#3B82F6'},
-                { value: 30, color: '#FB923C'},
-                { color: '#EF4444'}
+                { value: 15, color: '#EF4444'}, // fault
+                { value: 20, color: '#FB923C'}, // warning
+                { value: 30, color: '#3B82F6'}, // 정상 범위
+                { value: 35, color: '#FB923C'}, // warning
+                { color: '#EF4444'} // fault
             ]
         },
         {
@@ -910,7 +891,7 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             name: '온도 정상범위 (20~30˚C)',
             data: [],
             showInLegend: showLegend,
-            color: 'rgba(251, 146, 60, 0.15)',
+            color: 'rgba(59, 130, 246, 0.15)',
             marker: {
                 symbol: 'square',
                 radius: 8
@@ -946,7 +927,7 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
 }
 
 // 날짜 포맷 변환
-function formatData(eventDt) {
+function formatDate(eventDt) {
     // 서버에서 받은 eventDt를 Date 객체로 변환
     // 서버에서는 문자열로 넘어오기 때문에
     // 한국 시간으로 변환 필요

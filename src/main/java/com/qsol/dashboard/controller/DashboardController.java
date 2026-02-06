@@ -30,13 +30,9 @@ public class DashboardController {
             essId = 7;
         }
 
-        Map<String, Object> dashboardData = dashboardService.getDashboardData(essId, null);
+        Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
 
-        model.addAttribute("essInfo", dashboardData.get("essInfo"));
-        model.addAttribute("rackStatusInfo", dashboardData.get("rackStatusInfo"));
-        model.addAttribute("fireStatusInfo", dashboardData.get("fireStatusInfo"));
-        model.addAttribute("moduleInfo", dashboardData.get("moduleInfo"));
-        model.addAttribute("eventHistory", dashboardData.get("eventHistory"));
+        model.addAllAttributes(dashboardData);
         model.addAttribute("size", dashboardData.get("sizeMap"));
 
         return "main";
@@ -45,9 +41,8 @@ public class DashboardController {
     // 대시보드 업데이트
     @GetMapping("/api/updateDashboard")
     @ResponseBody
-    public Map<String, Object> getUpdateDashboard(@RequestParam Integer essId, @RequestParam(required = false) Integer lastEventId){
-        Map<String, Object> dashboardData = dashboardService.getDashboardData(essId, lastEventId);
-        dashboardData.put("size", dashboardData.get("sizeMap"));
+    public Map<String, Object> getUpdateDashboard(@RequestParam Integer essId){
+        Map<String, Object> dashboardData = dashboardService.getDashboardData(essId);
         return dashboardData;
     }
 
@@ -67,16 +62,16 @@ public class DashboardController {
 
     @GetMapping("/api/chart")
     @ResponseBody
-    public List<EssRackStatusMinuteDto> getEssRackStatusHistoryData(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
+    public Map<String, Object> getEssRackStatusHistoryData(@RequestParam Integer essId, @RequestParam Integer rackDeviceId) {
         return dashboardService.getEssRackStatusMinuteData(essId, rackDeviceId);
     }
 
     @GetMapping("/api/chart/latest")
     @ResponseBody
     public List<EssRackStatusMinuteDto> getLatestEssRackStatus(@RequestParam Integer essId,
-                                                                @RequestParam Integer rackDeviceId,
-                                                                @RequestParam(required = false)
-                                                                @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime lastCreatedAt) {
+                                                               @RequestParam Integer rackDeviceId,
+                                                               @RequestParam(required = false)
+                                                               @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime lastCreatedAt) {
         return dashboardService.getLatestRackStatus(essId, rackDeviceId, lastCreatedAt);
     }
 
