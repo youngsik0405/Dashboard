@@ -68,10 +68,10 @@ public class DashboardController {
 
     @GetMapping("/api/chart/latest")
     @ResponseBody
-    public List<EssRackStatusMinuteDto> getLatestEssRackStatus(@RequestParam Integer essId,
-                                                               @RequestParam Integer rackDeviceId,
-                                                               @RequestParam(required = false)
-                                                               @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime lastCreatedAt) {
+    public Map<String, Object> getLatestEssRackStatus(@RequestParam Integer essId,
+                                                      @RequestParam Integer rackDeviceId,
+                                                      @RequestParam(required = false)
+                                                      @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime lastCreatedAt) {
         return dashboardService.getLatestRackStatus(essId, rackDeviceId, lastCreatedAt);
     }
 

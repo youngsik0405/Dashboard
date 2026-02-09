@@ -585,11 +585,13 @@ function loadChart(essId, rackDeviceId) {
         .then(response => {
             const data = response.data;
 
+            // 각 데이터의 배열이 없을 경우 빈 배열로 초기화
             const xAxis = data.xAxis || [];
             const voltageData = data.voltageData || [];
             const currentData = data.currentData || [];
             const temperatureData = data.temperatureData || [];
 
+            // Highcharts 형식인 [시간, 값] 형태로 변환
             const voltage = xAxis.map((time, i) => [time, voltageData[i]]);
             const current = xAxis.map((time, i) => [time, currentData[i]]);
             const temperature = xAxis.map((time, i) => [time, temperatureData[i]]);
@@ -598,18 +600,15 @@ function loadChart(essId, rackDeviceId) {
             drawGraph(voltage, current, temperature, false);
 
             // 차트 객체에 마지막 시간 저장
-            // 업데이트에서 중복 데이터를 방지하기 위해서
             const rackChart = Highcharts.charts.find(chart =>
                 chart && chart.renderTo.id === 'chart'
             );
 
             if (rackChart) {
-                rackChart.lastCreatedAtMillis = 0;
+                // 업데이트에서 중복 데이터를 방지하기 위해서 차트가 가진 마지막 시간을 저장
+                rackChart.lastCreatedAtMillis = xAxis.length > 0 ? xAxis[xAxis.length - 1] : 0;
 
-                if (response.data && response.data.length > 0) {
-                    rackChart.lastCreatedAtMillis = new Date(response.data[response.data.length - 1].createdAt).getTime();
-                }
-
+                // 1분 뒤 최신 데이터 업데이트 시작
                 setTimeout(() => lastRackStatusPoint(essId, rackDeviceId), 60000);
             }
 
@@ -622,10 +621,12 @@ function loadChart(essId, rackDeviceId) {
 
 // 차트 업데이트
 function lastRackStatusPoint(essId, rackDeviceId) {
+    // 기존 차트 객체 찾기
     const rackChart = Highcharts.charts.find(chart =>
         chart && chart.renderTo.id === 'chart'
     );
 
+    // 차트가 없거나 lastCreatedAtMillis가 없으면 업데이트 불가
     if (!rackChart || !rackChart.lastCreatedAtMillis) {
         return;
     }
@@ -633,6 +634,7 @@ function lastRackStatusPoint(essId, rackDeviceId) {
     // 차트가 기억하는 마지막 데이터의 시간 가져오기
     const lastCreatedAt = formatDate(rackChart.lastCreatedAtMillis);
 
+    // 최신 데이터 조회 API 호출
     axios.get("/api/chart/latest", {
         params: {
             essId : essId,
@@ -640,61 +642,42 @@ function lastRackStatusPoint(essId, rackDeviceId) {
             lastCreatedAt: lastCreatedAt
         }
     }).then(response => {
-        const lastestRackStatus = response.data;
+        const latestRackStatus = response.data;
 
-        // 받아온 데이터가 없으면 종료
-        if (!lastestRackStatus || lastestRackStatus.length === 0) {
+        // console.log(latestRackStatus);
+
+        // 받아온 데이터가 없거나 xAxis가 비어있으면 종료
+        if (!latestRackStatus || !latestRackStatus.xAxis || latestRackStatus.xAxis.length === 0) {
             return;
         }
 
         const now = Date.now();
-        const threeHoursAgo = now - (3 * 60 * 60 * 1000);
+        const threeHoursAgo = now - (3 * 60 * 60 * 1000); // 3시간전
 
-        // 받아몬 리스트를 순차적으로 차트에 추가
-        lastestRackStatus.forEach(data => {
-            const createdAtMillis = new Date(data.createdAt).getTime();
+        // 각 데이터의 배열이 없을 경우 빈 배열로 초기화
+        const xAxis = latestRackStatus.xAxis || [];
+        const voltageData = latestRackStatus.voltageData || [];
+        const currentData = latestRackStatus.currentData || [];
+        const temperatureData = latestRackStatus.temperatureData || [];
 
-            // 중복 방지 (차트의 마지막 시간보다 작거나 같으면 패스)
-            if (createdAtMillis <= rackChart.lastCreatedAtMillis) {
+        // 받아온 리스트를 순차적으로 차트에 추가
+        xAxis.forEach((time, i) => {
+           // 중복 방지
+            if (time <= rackChart.lastCreatedAtMillis) {
                 return;
             }
 
-            // 3분 이상 연결이 끊긴 경우 데이터 null
-            const timeDiff = createdAtMillis - rackChart.lastCreatedAtMillis;
-            // console.log('시간차:', timeDiff, 'ms');
-
-            if (timeDiff > 180000) {
-                // console.log('연결 끊김 감지');
-                // 연결끊김 시작 지점
-                const disconnectStartTime = rackChart.lastCreatedAtMillis + 60000;
-                const shiftDisconnectStart = rackChart.series[0].data.length > 0 && (rackChart.series[0].data[0].x < threeHoursAgo);
-
-                rackChart.series[0].addPoint([disconnectStartTime, null], false, shiftDisconnectStart);
-                rackChart.series[1].addPoint([disconnectStartTime, null], false, shiftDisconnectStart);
-                rackChart.series[2].addPoint([disconnectStartTime, null], false, shiftDisconnectStart);
-
-                // 연결끊김 끝 지점
-                const disconnectEndTime = createdAtMillis - 60000;
-                const shiftDisconnectEnd = rackChart.series[0].data.length > 0 && (rackChart.series[0].data[0].x < threeHoursAgo);
-
-                rackChart.series[0].addPoint([disconnectEndTime, null], false, shiftDisconnectEnd);
-                rackChart.series[1].addPoint([disconnectEndTime, null], false, shiftDisconnectEnd);
-                rackChart.series[2].addPoint([disconnectEndTime, null], false, shiftDisconnectEnd);
-            }
-
             // 차트의 마지막 시간 갱신
-            rackChart.lastCreatedAtMillis = createdAtMillis;
+            rackChart.lastCreatedAtMillis = time;
 
             // 데이터가 있고, 데이터가 3시간을 지났으면 shift 처리
             const shiftPoint = rackChart.series[0].data.length > 0 && (rackChart.series[0].data[0].x < threeHoursAgo);
 
-            // 데이터 추가 - addPoint(추가할 데이터, redraw 여부, shiftPoint 여부)
-            // redraw 여부를 false로 한 이유는 나중에 한번에 처리하기 위해서
-            rackChart.series[0].addPoint([createdAtMillis, data.rackDcVoltage ?? null], false, shiftPoint);
-            rackChart.series[1].addPoint([createdAtMillis, data.rackCurrent ?? null], false, shiftPoint);
-            rackChart.series[2].addPoint([createdAtMillis, data.rackTemperature ?? null], false, shiftPoint);
+            // 데이터 추가
+            rackChart.series[0].addPoint([time, voltageData[i] ?? null], false, shiftPoint);
+            rackChart.series[1].addPoint([time, currentData[i] ?? null], false, shiftPoint);
+            rackChart.series[2].addPoint([time, temperatureData[i] ?? null], false, shiftPoint);
         });
-
 
         // 줌 상태가 아닐 때 x축 업데이트
         if (!rackChart.isZoomed) {
@@ -705,7 +688,8 @@ function lastRackStatusPoint(essId, rackDeviceId) {
     }).catch(error => {
         console.error("최신 차트 데이터 조회 실패", error);
     }).finally(() => {
-       setTimeout(() => lastRackStatusPoint(essId, rackDeviceId), 60000);
+        // 1분후 다시 갱신
+      setTimeout(() => lastRackStatusPoint(essId, rackDeviceId), 60000);
     });
 }
 
@@ -713,39 +697,204 @@ function lastRackStatusPoint(essId, rackDeviceId) {
 function drawGraph(voltageData, currentData, temperatureData, isError) {
     const now = Date.now();
     const threeHoursAgo = now - (3 * 60 * 60 * 1000);
-    const showLegend = voltageData.length > 0 || currentData.length > 0 || temperatureData.length > 0;
+    // 데이터가 하나라도 있으면 범례 표시
+    const hasData = voltageData.length > 0 || currentData.length > 0 || temperatureData.length > 0;
+
+    // 색상 정의
+    const colors = {
+        voltage: '#22C55E',
+        current: '#A855F7',
+        temperature: '#3B82F6',
+        warning: '#FB923C',
+        fault: '#EF4444'
+    };
+
+    // 임계치 정의
+    const ranges = {
+        voltage: {
+            min: 50,
+            max: 60,
+            warning: {
+                min: 45,
+                max: 65
+            }},
+        current: {
+            min: 0,
+            max: 2.0,
+            warning: {
+                max: 2.5
+            }},
+        temperature: {
+            min: 20,
+            max: 30,
+            warning: {
+                min: 15,
+                max: 35
+            }}
+    };
+
+
+    // 툴팁에서 시리즈별 기본 색상
+    const seriesConfig = {
+        '전압(V)': { color: colors.voltage },
+        '전류(A)': { color: colors.current },
+        '온도(˚C)': { color: colors.temperature }
+   };
+
+    // 정상 범위 밴드 정의
+    const plotBandMap = {
+        voltage : {
+            id: 'voltage-band',
+            from: ranges.voltage.min,
+            to: ranges.voltage.max,
+            color: 'rgba(34, 197, 94, 0.15)'
+        },
+        current : {
+            id: 'current-band',
+            from: ranges.current.min,
+            to: ranges.current.max,
+            color: 'rgba(168, 85, 247, 0.12)'
+        },
+        temperature : {
+            id: 'temperature-band',
+            from: ranges.temperature.min,
+            to: ranges.temperature.max,
+            color: 'rgba(59, 130, 246, 0.12)'
+        }
+    };
+
+   // 차트 우측 상단 정상범위 가이드 정의
+   const rangeGuides = [
+       { text: '전압 정상범위 (50~60V)', color: 'rgba(34, 197, 94, 0.2)'},
+       { text: '전류 정상범위 (0~2A)', color: 'rgba(168, 85, 247, 0.2)'},
+       { text: '온도 정상범위 (20~30˚C)', color: 'rgba(59, 130, 246, 0.2)'}
+   ]
+
+   // 값에 따라 색상 결정 하는 함수
+    function getValueColor(value, seriesName) {
+        if (seriesName === '전압(V)') {
+            if (value > ranges.voltage.warning.max || value < ranges.voltage.warning.min) {
+                return colors.fault; // fault
+            } else if (value > ranges.voltage.max || value < ranges.voltage.min) {
+                return colors.warning; // warning
+            }
+        } else if (seriesName === '전류(A)') {
+            if (value > ranges.current.warning.max) {
+                return colors.fault; // fault
+            } else if (value > ranges.current.max) {
+                return colors.warning; // warning
+            }
+        } else if (seriesName === '온도(˚C)') {
+            if (value > ranges.temperature.warning.max || value < ranges.temperature.warning.min) {
+                return colors.fault; // fault
+            } else if (value > ranges.temperature.max || value < ranges.temperature.min) {
+                return colors.warning; // warning
+            }
+        }
+
+        return null; // 기본색
+    }
+
+    // 범례 클릭시 범위도 함께 활성/비활성화 하는 함수
+    function togglePlotBand(series, plotBand) {
+        const axis = series.yAxis;
+        if (series.visible) {
+            axis.addPlotBand(plotBand);
+        } else {
+            axis.removePlotBand(plotBand.id);
+        }
+    }
+
+    // 차트 우측 상단에 정상범위 가이드 그리는 함수
+    function renderRangeGuides(chart) {
+        // 가이드 시작 좌표 설정
+        const totalGuideWidth = 450;
+        let currentX = chart.chartWidth - totalGuideWidth;
+        const startY = 60;
+
+        // 데이터가 있을 때만 가이드 표시
+        if (hasData) {
+            rangeGuides.forEach((guide, index) => {
+                // 색상 박스 그리기
+                chart.renderer.rect(currentX, startY, 12, 12, 2)
+                    .attr({
+                        fill: guide.color
+                    })
+                    .add();
+
+                // 설명 텍스트
+                const textElement = chart.renderer.text(guide.text, currentX + 20, startY + 10)
+                    .css({
+                        fontSize: '12px',
+                        fontWeight: '600'
+                    })
+                    .add();
+
+                // 텍스트의 실제 폭을 측정해서 다음 항목의 시작 위치를 계산
+                // 폭 + 30 만큼 띄워서 다음 항목 표시
+                currentX += textElement.getBBox().width + 30;
+            });
+        }
+    }
+
+    // 시리즈 생성 함수
+    function createSeries(name, data, plotBand, zones) {
+       return {
+           name,
+           data,
+           connectNulls: false,             // null 포인트는 선을 끊어서 표시
+           showInLegend: hasData,           // 데이터가 있을때만 범례 표시
+           color: seriesConfig[name].color, // 기본색
+           events: {
+               // 범례를 숨김 처리하면 밴드도 숨김
+               hide() { togglePlotBand(this, plotBand); },
+               // 범례를 보이면 밴드도 보임
+               show() { togglePlotBand(this, plotBand); }
+           },
+           zones
+       };
+    }
 
     Highcharts.setOptions({
         time: {
             useUTC: false
         },
         lang: {
-            noData: isError ? '데이터를 불러오는 중 오류가 발생했습니다.' : '최근 1시간동안 수집한 데이터가 없습니다.'
+            // 데이터가 없는 경우 표시
+            noData: (!hasData)
+                ? (isError ? '데이터를 불러오는 중 오류가 발생했습니다.' : '최근 3시간동안 수집한 데이터가 없습니다.')
+                : ''
         }
     });
 
+   // 차트 옵션
     const chartOptions = {
         chart: {
             type: 'line',
             zoomType: 'xy',
             events: {
                 selection: function (event) {
-                    // 리셋 시 줌 상태 false
+                    // reset zoom 버튼을 눌렀을때
                     if (event.resetSelection) {
                         const now = Date.now();
                         const threeHoursAgo = now - (3 * 60 * 60 * 1000);
+
+                        // x축/y축 초기화면으로 복귀
                         this.xAxis[0].setExtremes(threeHoursAgo, now, true);
                         this.yAxis[0].setExtremes(null, null, true);
+
+                        // zoom 상태 false
                         this.isZoomed = false;
 
+                        // reset 버튼이 남아있으면 제거
                         if (this.resetZoomButton) {
                             this.resetZoomButton.destroy();
                             this.resetZoomButton = null;
                         }
-
                         return false;
                     }
 
+                    // 줌이 발생했을 때
                     if (event.xAxis || event.yAxis) {
                         // 차트 객체에 줌 상태 저장
                         this.isZoomed = true;
@@ -753,8 +902,8 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
                     }
                 },
                 load: function () {
-                    // 초기 로드 시 줌 상태 false
-                    this.isZoomed = false;
+                    // 차트 우측 상단에 정상범위 가이드 표시
+                    renderRangeGuides(this);
                 }
             }
         },
@@ -775,18 +924,17 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
         },
         xAxis: {
             type: 'datetime',
-            min: threeHoursAgo, // 1시간전
+            min: threeHoursAgo, // 3시간전
             max: now,
-            tickInterval: 15 * 60 * 1000, // 5분 단위
+            tickInterval: 15 * 60 * 1000, // 15분 단위
             labels: {
                 format: '{value:%H:%M}'
             },
             showEmpty: false,
             events: {
                 afterSetExtremes: function(e) {
-                    // Reset zoom 버튼 클릭 감지
+                    // resetZoomButton이 사라진 상태면 reset 판단
                     if (e.trigger === 'zoom' && this.chart.resetZoomButton == null) {
-                        // resetZoomButton이 사라진 상태면 reset 판단
                         this.chart.isZoomed = false;
                     }
                 }
@@ -797,19 +945,7 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
                 text: ''
             },
             // 정상범위 밴드
-            plotBands: [{
-                from: 50,
-                to: 60,
-                color: 'rgba(34, 197, 94, 0.12)'
-            }, {
-                from: 20,
-                to: 30,
-                color: 'rgba(59, 130, 246, 0.12)'
-            }, {
-                from: 0,
-                to: 2.0,
-                color: 'rgba(168, 85, 247, 0.12)'
-            }],
+            plotBands: Object.values(plotBandMap),
             labels: {
                 format: '{value}'
             },
@@ -822,7 +958,18 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
             crosshairs: true,
             xDateFormat: '%H:%M:%S',
             style: {
-                fontSize: '18px'
+                fontSize: '16px',
+                fontWeight: 'bold'
+            },
+            useHTML: true,
+            // 툴팁에 각 시리즈 값을 출력
+            pointFormatter: function () {
+                const seriesName = this.series.name;                    // 현재 포인트의 명
+                const baseColor = seriesConfig[seriesName].color;       // 시리즈 기본색
+                const valueColor = getValueColor(this.y, seriesName);   // 값에 따른 색(warning, fault)
+
+                return `<span style="color:${baseColor}">\u25CF</span> ${seriesName}: ` +
+                       `<b style="color:${valueColor}">${this.y !== null ? this.y : '-'}</b></br>`;
             }
         },
         noData: {
@@ -838,77 +985,27 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
                 color: isError ? '#FF6A33' : '#374151'
             }
         },
-        series: [{
-            name: '전압(V)',
-            data: voltageData,
-            connectNulls: false, // null 값이면 연결 안함, 데이터 누락 표시를 위해서
-            showInLegend: showLegend,
-            color: '#22C55E',
-            zones: [
-                { value: 45, color: '#EF4444'}, // fault
-                { value: 50, color: '#FB923C'}, // warning
-                { value: 60, color: '#22C55E'}, // 정상 범위
-                { value: 65, color: '#FB923C'}, // warning
-                { color: '#EF4444'} // fault
-            ]
-        }, {
-            name: '전류(A)',
-            data: currentData,
-            connectNulls: false,
-            showInLegend: showLegend,
-            color: '#A855F7',
-            zones: [
-                { value: 2.0, color: '#A855F7'}, // 정상 범위
-                { value: 2.5, color: '#FB923C'}, // warning
-                { color: '#EF4444'} // fault
-            ]
-        }, {
-            name: '온도(˚C)',
-            data: temperatureData,
-            connectNulls: false,
-            showInLegend: showLegend,
-            color: '#3B82F6',
-            zones: [
-                { value: 15, color: '#EF4444'}, // fault
-                { value: 20, color: '#FB923C'}, // warning
-                { value: 30, color: '#3B82F6'}, // 정상 범위
-                { value: 35, color: '#FB923C'}, // warning
-                { color: '#EF4444'} // fault
-            ]
-        },
-        {
-            name: '전압 정상범위 (50~60V)',
-            data: [],
-            showInLegend: showLegend,
-            color: 'rgba(34, 197, 94, 0.15)',
-            marker: {
-                symbol: 'square',
-                radius: 8
-            },
-            lineWidth: 0
-        },
-        {
-            name: '온도 정상범위 (20~30˚C)',
-            data: [],
-            showInLegend: showLegend,
-            color: 'rgba(59, 130, 246, 0.15)',
-            marker: {
-                symbol: 'square',
-                radius: 8
-            },
-            lineWidth: 0
-        },
-        {
-            name: '전류 정상범위 (0~2A)',
-            data: [],
-            showInLegend: showLegend,
-            color: 'rgba(168, 85, 247, 0.15)',
-            marker: {
-                symbol: 'square',
-                radius: 8
-            },
-            lineWidth: 0
-        }
+        // 시리즈 생성
+        series: [
+            createSeries('전압(V)', voltageData, plotBandMap.voltage, [
+                { value: 45, color: colors.fault},          // fault
+                { value: 50, color: colors.warning},        // warning
+                { value: 60, color: colors.voltage},        // 정상 범위
+                { value: 65, color: colors.warning},        // warning
+                { color: colors.fault}                      // fault
+            ]),
+            createSeries('전류(A)', currentData, plotBandMap.current, [
+                { value: 2.0, color: colors.current},       // 정상 범위
+                { value: 2.5, color: colors.warning},       // warning
+                { color: colors.fault}                      // fault
+            ]),
+            createSeries('온도(˚C)', temperatureData, plotBandMap.temperature, [
+                { value: 15, color: colors.fault},          // fault
+                { value: 20, color: colors.warning},        // warning
+                { value: 30, color: colors.temperature},    // 정상 범위
+                { value: 35, color: colors.warning},        // warning
+                { color: colors.fault}                      // fault
+            ])
         ],
         credits: {
             enabled: false
@@ -922,6 +1019,7 @@ function drawGraph(voltageData, currentData, temperatureData, isError) {
     if (!existingChart) {
         const newChart = Highcharts.chart('chart', chartOptions);
 
+        // x축 범위를 최근 3시간으로 고정
         newChart.xAxis[0].setExtremes(threeHoursAgo, now);
     }
 }

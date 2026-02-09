@@ -144,62 +144,15 @@ public class DashboardService {
         }
     }
 
-    // x축 리스트 만들어서
-    // 각각의 항목에 대한 y축 값 리스트 생성
-    // 묶음으로 만들어서 map에 담기
-    // map return
-
-
     // RackHistory 정보 (차트 그리기 위해서)
     public Map<String, Object> getEssRackStatusMinuteData(Integer essId, Integer rackDeviceId) {
         try {
-            // 현재 시점을 기준으로 1시간 전
+            // 현재 시점을 기준으로 3시간 전
             LocalDateTime threeHoursAgo = LocalDateTime.now().minusHours(3);
+            // 3시간 전 ~ 현재까지의 데이터를 createdAt 오름차순으로 조회
             List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, threeHoursAgo).stream().map(EssRackStatusMinuteDto::from).toList();
 
-            List<Long> xAxis = new ArrayList<>();
-            List<BigDecimal> volatageData = new ArrayList<>();
-            List<BigDecimal> currentData = new ArrayList<>();
-            List<BigDecimal> temperatureData = new ArrayList<>();
-
-            if (!essRackStatusMinuteList.isEmpty()) {
-                LocalDateTime prevTime = null;
-
-                for (EssRackStatusMinuteDto dto : essRackStatusMinuteList) {
-                    LocalDateTime currentTime = dto.getCreatedAt();
-
-                    if (prevTime != null) {
-                        long diff = Duration.between(prevTime, currentTime).toMillis();
-
-                        if (diff > 180000) {
-                            xAxis.add(prevTime.plusMinutes(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-                            volatageData.add(null);
-                            currentData.add(null);
-                            temperatureData.add(null);
-
-                            xAxis.add(currentTime.minusMinutes(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-                            volatageData.add(null);
-                            currentData.add(null);
-                            temperatureData.add(null);
-                        }
-                    }
-
-                    xAxis.add(currentTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
-                    volatageData.add(dto.getRackDcVoltage());
-                    currentData.add(dto.getRackCurrent());
-                    temperatureData.add(dto.getRackTemperature());
-
-                    prevTime = currentTime;
-                }
-            }
-
-            Map<String, Object> chartData = new HashMap<>();
-            chartData.put("xAxis", xAxis);
-            chartData.put("voltageData", volatageData);
-            chartData.put("currentData", currentData);
-            chartData.put("temperatureData", temperatureData);
-
-            return chartData;
+            return convertToChartData(essRackStatusMinuteList, null);
         } catch (Exception e) {
             log.error("EssRackStatusMinuteData 조회 실패 essId={}", essId, e);
             return null;
@@ -207,41 +160,69 @@ public class DashboardService {
     }
 
     // 최신 RackStatus (차트 업데이트 위해서)
-    public List<EssRackStatusMinuteDto> getLatestRackStatus(Integer essId,Integer rackDeviceId, LocalDateTime lastCreatedAt) {
+    public Map<String, Object> getLatestRackStatus(Integer essId, Integer rackDeviceId, LocalDateTime lastCreatedAt) {
         try {
-          List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, lastCreatedAt).stream().map(EssRackStatusMinuteDto::from).toList();
+            // lastCreatedAt 이후의 최신 데이터를 createdAt 오름차순으로 조회
+            List<EssRackStatusMinuteDto> essRackStatusMinuteList = essRackStatusMinuteRepository.findByEssIdAndRackDeviceIdAndCreatedAtAfterOrderByCreatedAtAsc(essId, rackDeviceId, lastCreatedAt).stream().map(EssRackStatusMinuteDto::from).toList();
 
-          List<Object[]> voltageUpdates = new ArrayList<>();
-          List<Object[]> currentUpdates = new ArrayList<>();
-          List<Object[]> temperatureUpdates = new ArrayList<>();
-
-          LocalDateTime prevTime = lastCreatedAt;
-          long lastMillis = lastCreatedAt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-
-          for (EssRackStatusMinuteDto dto : essRackStatusMinuteList) {
-              LocalDateTime currentTime = dto.getCreatedAt();
-
-
-              long diff = Duration.between(prevTime, currentTime).toMillis();
-
-              if (diff > 180000) {
-                  long gapStart = prevTime.plusMinutes(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                  voltageUpdates.add(new Object[]{gapStart, null});
-                  currentUpdates.add(new Object[]{gapStart, null});
-                  temperatureUpdates.add(new Object[]{gapStart, null});
-
-                  long gapEnd = currentTime.minusMinutes(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                  voltageUpdates.add(new Object[]{gapEnd, null});
-                  currentUpdates.add(new Object[]{gapEnd, null});
-                  temperatureUpdates.add(new Object[]{gapEnd, null});
-              }
-          }
-
-
-          return essRackStatusMinuteList.isEmpty() ? null : essRackStatusMinuteList;
+            return convertToChartData(essRackStatusMinuteList, lastCreatedAt);
         } catch (Exception e) {
             log.error("LatestRackStatus 조회 실패 essId={}", essId, e);
             return null;
         }
+    }
+
+    // 차트 데이터 변환 메서드
+    private Map<String, Object> convertToChartData(List<EssRackStatusMinuteDto> essRackStatusMinuteList, LocalDateTime lastCreatedAt){
+        List<Long> xAxis = new ArrayList<>();                   // x축
+        List<BigDecimal> voltageData = new ArrayList<>();       // 전압
+        List<BigDecimal> currentData = new ArrayList<>();       // 전류
+        List<BigDecimal> temperatureData = new ArrayList<>();   // 온도
+
+        // 이전 시간
+        LocalDateTime prevTime = lastCreatedAt;
+
+        for (EssRackStatusMinuteDto dto : essRackStatusMinuteList) {
+            // 현재 데이터 시간
+            LocalDateTime currentTime = dto.getCreatedAt();
+
+            // 이전 시간이 있을때
+            if (prevTime != null) {
+                // 데이터 간격 (이전 데이터와 현재 데이터 차이 계산)
+                long diff = Duration.between(prevTime, currentTime).toMillis();
+
+                // 3분이상 차이 통신 끊김으로 판단
+                if (diff > 180000) {
+                    // 그래프를 끊기 위해서 이전 시간 +1분에 null 삽입
+                    xAxis.add(prevTime.plusMinutes(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+                    voltageData.add(null);
+                    currentData.add(null);
+                    temperatureData.add(null);
+
+                    // 그래프 재시작 -1분에 null 삽입
+                    xAxis.add(currentTime.minusMinutes(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+                    voltageData.add(null);
+                    currentData.add(null);
+                    temperatureData.add(null);
+                }
+            }
+
+            // 정상 데이터 추가
+            xAxis.add(currentTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+            voltageData.add(dto.getRackDcVoltage());
+            currentData.add(dto.getRackCurrent());
+            temperatureData.add(dto.getRackTemperature());
+
+            // 현재시간을 이전시간에 저장
+            prevTime = currentTime;
+        }
+
+        Map<String, Object> chartData = new HashMap<>();
+        chartData.put("xAxis", xAxis);
+        chartData.put("voltageData", voltageData);
+        chartData.put("currentData", currentData);
+        chartData.put("temperatureData", temperatureData);
+
+        return chartData;
     }
 }
